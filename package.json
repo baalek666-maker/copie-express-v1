@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:backend": "node server/index.js",
+    "dev:backend": "node index.js",
     "dev:all": "concurrently \"npm:dev\" \"npm:dev:backend\"",
     "build": "next build",
-    "start": "next start",
+    "start": "node index.js",
+    "start:frontend": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },

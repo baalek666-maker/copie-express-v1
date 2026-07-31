@@ -1,4 +1,4 @@
-// server/index.js — Express backend minimal pour les opérations longues
+// index.js — Express backend pour Copie Express
 // Endpoints : upload, extraction Mistral, export CSV, cron RGPD
 
 import express from 'express';
