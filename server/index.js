@@ -1,0 +1,260 @@
+// server/index.js — Express backend minimal pour les opérations longues
+// Endpoints : upload, extraction Mistral, export CSV, cron RGPD
+
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import { createClient } from '@supabase/supabase-js';
+import Stripe from 'stripe';
+import Mistral from '@mistralai/mistralai';
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+app.use(cors({ origin: [process.env.NEXT_PUBLIC_APP_URL, 'http://localhost:3000'] }));
+app.use(express.json({ limit: '10mb' }));
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const mistral = new Mistral(process.env.MISTRAL_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// === HEALTH ===
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', service: 'copie-express-backend', timestamp: new Date().toISOString() });
+});
+
+// === UPLOAD ===
+app.post('/api/upload', upload.array('files', 100), async (req, res) => {
+  try {
+    const { evaluationId, userId } = req.body;
+    const files = req.files as Express.Multer.File[];
+    if (!files?.length) return res.status(400).json({ error: 'no_files' });
+    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
+
+    const uploaded = [];
+    for (const file of files) {
+      const filename = `${userId}/${evaluationId}/${Date.now()}_${file.originalname}`;
+      const { data, error } = await supabase.storage
+        .from('copies')
+        .upload(filename, file.buffer, { contentType: file.mimetype, upsert: false });
+
+      if (error) { console.error('upload error:', error); continue; }
+      uploaded.push(data.path);
+    }
+
+    res.json({ uploaded: uploaded.length, paths: uploaded });
+  } catch (err) {
+    console.error('upload error:', err);
+    res.status(500).json({ error: 'upload_failed' });
+  }
+});
+
+// === EXTRACT (Mistral OCR + LLM) ===
+app.post('/api/extract', async (req, res) => {
+  try {
+    const { evaluationId, copyId } = req.body;
+    if (!evaluationId || !copyId) return res.status(400).json({ error: 'missing_params' });
+
+    // Récupère la copie
+    const { data: copy, error: copyError } = await supabase
+      .from('copies')
+      .select('*, evaluations(*)')
+      .eq('id', copyId)
+      .single();
+
+    if (copyError || !copy) return res.status(404).json({ error: 'copy_not_found' });
+
+    // Récupère l'URL signée
+    const { data: signedUrl } = await supabase.storage
+      .from('copies')
+      .createSignedUrl(copy.photo_storage_path, 60);
+
+    if (!signedUrl?.signedUrl) return res.status(500).json({ error: 'signed_url_failed' });
+
+    // Step 1 : OCR
+    const ocrResponse = await mistral.ocr.process({
+      model: 'mistral-ocr-latest',
+      document: { type: 'document_url', documentUrl: signedUrl.signedUrl },
+      includeImageBase64: false,
+    });
+    const ocrText = ocrResponse.pages?.map(p => p.markdown || '').join('\n\n') || '';
+
+    // Step 2 : Extraction structurée
+    const evalData = copy.evaluations;
+    const extraction = await mistral.chat.complete({
+      model: 'mistral-small-latest',
+      messages: [
+        {
+          role: 'system',
+          content: 'Tu es un assistant qui extrait les réponses d\'une copie d\'élève à partir du texte OCR. Tu retournes UNIQUEMENT du JSON valide, aucun commentaire.',
+        },
+        {
+          role: 'user',
+          content: `Barème : ${JSON.stringify(evalData.grading_scale)}\n${evalData.correct_answers ? `Bonnes réponses : ${JSON.stringify(evalData.correct_answers)}\n` : ''}\nTexte OCR :\n"""${ocrText}"""\n\nJSON strict : {"student_identifier": "eleve_XX" | null, "answers": {<id>: "réponse" | null, ...}, "confidence": 0..1}`,
+        },
+      ],
+      responseFormat: { type: 'json_object' },
+      temperature: 0,
+    });
+
+    const parsed = JSON.parse(extraction.choices[0].message.content);
+
+    // Update la copie
+    await supabase.from('copies').update({
+      ocr_text: ocrText,
+      extracted_answers: parsed.answers,
+      confidence_score: parsed.confidence,
+      processed_at: new Date().toISOString(),
+      status: 'ready_to_validate',
+    }).eq('id', copyId);
+
+    res.json({ success: true, copyId, parsed });
+  } catch (err) {
+    console.error('extract error:', err);
+    res.status(500).json({ error: 'extract_failed', details: err.message });
+  }
+});
+
+// === EXPORT CSV (SACoche / Pronote) ===
+app.post('/api/export', async (req, res) => {
+  try {
+    const { evaluationId, format } = req.body; // format: 'sacoche' | 'pronote' | 'xlsx'
+    if (!evaluationId || !format) return res.status(400).json({ error: 'missing_params' });
+
+    const { data: copies, error } = await supabase
+      .from('copies')
+      .select('*')
+      .eq('evaluation_id', evaluationId)
+      .eq('validated_by_user', true);
+
+    if (error) throw error;
+    if (!copies?.length) return res.status(404).json({ error: 'no_validated_copies' });
+
+    // Calcul du score pour chaque copie
+    const { data: evaluation } = await supabase
+      .from('evaluations')
+      .select('grading_scale, correct_answers')
+      .eq('id', evaluationId)
+      .single();
+
+    const scale = evaluation.grading_scale;
+    let csv = '';
+
+    if (format === 'sacoche') {
+      const headers = ['eleve', ...scale.map(q => q.id), 'note'];
+      csv = headers.join(';') + '\n';
+      for (const copy of copies) {
+        const row = [copy.student_identifier || 'eleve_XX'];
+        let total = 0;
+        for (const q of scale) {
+          const ans = copy.extracted_answers?.[q.id];
+          const correct = evaluation.correct_answers?.[q.id];
+          const pts = ans && correct && ans.toLowerCase() === correct.toLowerCase() ? q.max_points : 0;
+          row.push(`"${ans || ''}"`);
+          total += pts;
+        }
+        row.push(total.toFixed(2));
+        csv += row.join(';') + '\n';
+      }
+    } else if (format === 'pronote') {
+      csv = 'Nom;Note;Appreciation\n';
+      for (const copy of copies) {
+        const total = computeScore(copy.extracted_answers, scale, evaluation.correct_answers);
+        csv += `${copy.student_identifier || 'eleve_XX'};${total.toFixed(2)};${getAppreciation(total / scale.reduce((s, q) => s + q.max_points, 0))}\n`;
+      }
+    }
+
+    // Upload le CSV
+    const filename = `${evaluationId}/${Date.now()}_${format}.csv`;
+    await supabase.storage.from('exports').upload(filename, csv, { contentType: 'text/csv' });
+
+    // Trace l'export
+    await supabase.from('exports').insert({
+      evaluation_id: evaluationId,
+      format,
+      file_storage_path: filename,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+    res.json({ success: true, filename, preview: csv.split('\n').slice(0, 3).join('\n') });
+  } catch (err) {
+    console.error('export error:', err);
+    res.status(500).json({ error: 'export_failed' });
+  }
+});
+
+function computeScore(answers, scale, correctAnswers) {
+  let total = 0;
+  for (const q of scale) {
+    const ans = answers?.[q.id];
+    const correct = correctAnswers?.[q.id];
+    if (ans && correct && ans.toLowerCase().trim() === correct.toLowerCase().trim()) total += q.max_points;
+  }
+  return total;
+}
+
+function getAppreciation(ratio) {
+  if (ratio >= 0.9) return 'Excellent';
+  if (ratio >= 0.75) return 'Très bien';
+  if (ratio >= 0.6) return 'Bien';
+  if (ratio >= 0.5) return 'Assez bien';
+  if (ratio >= 0.4) return 'Passable';
+  return 'Insuffisant';
+}
+
+// === STRIPE WEBHOOK ===
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  try {
+    const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const userId = session.metadata.user_id;
+      const planId = session.metadata.plan_id;
+      await supabase.from('users').update({
+        subscription_status: 'active',
+        subscription_plan: planId,
+        stripe_customer_id: session.customer,
+      }).eq('id', userId);
+    }
+    res.json({ received: true });
+  } catch (err) {
+    console.error('webhook error:', err);
+    res.status(400).json({ error: 'webhook_failed' });
+  }
+});
+
+// === CRON RGPD : suppression copies > 30 jours ===
+// À héberger séparément (ex: GitHub Action cron, Railway cron, Vercel cron)
+app.post('/api/cron/cleanup', async (req, res) => {
+  try {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: expiredCopies } = await supabase
+      .from('copies')
+      .select('id, photo_storage_path, evaluations!inner(created_at)')
+      .lt('evaluations.created_at', cutoff);
+
+    let deleted = 0;
+    for (const copy of expiredCopies || []) {
+      await supabase.storage.from('copies').remove([copy.photo_storage_path]);
+      await supabase.from('copies').delete().eq('id', copy.id);
+      deleted++;
+    }
+    res.json({ deleted, cutoff });
+  } catch (err) {
+    console.error('cleanup error:', err);
+    res.status(500).json({ error: 'cleanup_failed' });
+  }
+});
+
+app.listen(PORT, () => console.log(`Copie Express backend running on :${PORT}`));
