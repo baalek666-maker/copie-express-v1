@@ -2,11 +2,12 @@
   "name": "copie-express-v1",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "dev:backend": "node index.js",
     "dev:all": "concurrently \"npm:dev\" \"npm:dev:backend\"",
-    "build": "next build",
+    "build:next": "next build",
     "start": "node index.js",
     "start:frontend": "next start",
     "lint": "next lint",

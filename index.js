@@ -6,7 +6,7 @@ import cors from 'cors';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-import Mistral from '@mistralai/mistralai';
+import { Mistral } from '@mistralai/mistralai';
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
