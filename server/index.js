@@ -29,6 +29,10 @@ const mistral = new Mistral(process.env.MISTRAL_API_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // === HEALTH ===
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'copie-express-backend', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'copie-express-backend', timestamp: new Date().toISOString() });
 });
@@ -283,4 +287,4 @@ app.post('/api/cron/cleanup', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Copie Express backend running on :${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Copie Express backend running on 0.0.0.0:${PORT}`));
