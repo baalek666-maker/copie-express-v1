@@ -198,26 +198,74 @@ function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
             </details>
           )}
 
+          {/* Affichage par question/réponse selon ce que Mistral a retourné */}
           <div className="space-y-3">
-            {gradingScale.map((q) => (
-              <div key={q.id} className="space-y-1">
-                <Label>{q.label} <span className="text-muted-foreground">({q.max_points} pts)</span></Label>
-                <Textarea
-                  value={answers[q.id] || ''}
-                  onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-                  rows={2}
-                  placeholder="Réponse élève..."
-                />
-              </div>
-            ))}
+            {Array.isArray(copy.extracted_answers) ? (
+              // Mode barème : array de {question_id, student_wrote, expected, is_correct, confidence}
+              copy.extracted_answers.map((a: any, idx: number) => (
+                <Card key={idx} className={`p-4 ${a.is_correct ? 'border-green-300 bg-green-50/40' : a.is_correct === false ? 'border-red-200 bg-red-50/30' : 'border-amber-200 bg-amber-50/30'}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm">Question {a.question_id}</span>
+                        {a.confidence !== undefined && (
+                          <span className="text-xs text-muted-foreground">
+                            · Fiabilité {Math.round((a.confidence || 0) * 100)}%
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm">
+                        <div className="text-muted-foreground text-xs">Élève a écrit :</div>
+                        <div className="font-mono">{a.student_wrote || <em className="text-muted-foreground">(vide)</em>}</div>
+                      </div>
+                      {a.expected && (
+                        <div className="text-sm mt-2">
+                          <div className="text-muted-foreground text-xs">Réponse attendue :</div>
+                          <div className="font-mono text-green-700">{a.expected}</div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="shrink-0">
+                      {a.is_correct === true && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                          ✓ Correct
+                        </span>
+                      )}
+                      {a.is_correct === false && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-medium">
+                          ✗ Incorrect
+                        </span>
+                      )}
+                      {a.is_correct === undefined && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">
+                          ? Incertain
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              // Mode simple (pas de barème) : objet {q1: "réponse", q2: "..."}
+              Object.entries(copy.extracted_answers || {}).map(([qId, ans]) => (
+                <Card key={qId} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm mb-1">Question {qId}</div>
+                      <div className="font-mono text-sm">{String(ans || '') || <em className="text-muted-foreground">(vide)</em>}</div>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
           </div>
 
           <div className="flex gap-2 pt-4 border-t">
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Sauvegarde...' : 'Valider et noter ✓'}
+            <Button onClick={handleSave} disabled={saving} size="lg">
+              {saving ? 'Validation...' : '✓ Valider la note proposée'}
             </Button>
             <Button variant="outline" onClick={onClose} disabled={saving}>
-              Annuler
+              Fermer
             </Button>
           </div>
         </CardContent>
