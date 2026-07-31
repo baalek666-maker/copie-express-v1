@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Download, FileText } from 'lucide-react';
 import { UploadDropzone } from '@/components/upload-dropzone';
 import { CopiesList } from '@/components/copies-list';
+import { SubjectUploader } from '@/components/subject-uploader';
 
 export default async function EvaluationDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabase();
@@ -115,17 +116,24 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Uploader des copies</CardTitle>
-          <CardDescription>
-            Photo de pile, photos individuelles, ou PDF multi-pages. Jusqu'à 100 fichiers.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UploadDropzone evaluationId={params.id} />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <SubjectUploader
+          evaluationId={params.id}
+          existingSubjectPath={evaluation.subject_storage_path}
+        />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Uploader des copies</CardTitle>
+            <CardDescription>
+              Photo de pile, photos individuelles, ou PDF multi-pages. Jusqu'à 100 fichiers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UploadDropzone evaluationId={params.id} />
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>

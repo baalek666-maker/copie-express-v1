@@ -37,6 +37,47 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'copie-express-backend', timestamp: new Date().toISOString() });
 });
 
+// === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
+app.post('/api/subject', upload.single('file'), async (req, res) => {
+  try {
+    const { evaluationId, userId } = req.body;
+    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
+    if (!req.file) return res.status(400).json({ error: 'no_file' });
+
+    // Vérifier que l'éval appartient au user
+    const { data: evalData, error: evalError } = await supabase
+      .from('evaluations')
+      .select('id, user_id')
+      .eq('id', evaluationId)
+      .eq('user_id', userId)
+      .single();
+
+    if (evalError || !evalData) return res.status(404).json({ error: 'evaluation_not_found' });
+
+    // Upload le sujet dans le bucket copies
+    const filename = `${userId}/${evaluationId}/subject_${Date.now()}_${req.file.originalname}`;
+    const { data, error } = await supabase.storage
+      .from('copies')
+      .upload(filename, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+
+    if (error) {
+      console.error('subject upload error:', error);
+      return res.status(500).json({ error: 'upload_failed' });
+    }
+
+    // Update l'évaluation
+    await supabase.from('evaluations').update({
+      subject_storage_path: data.path,
+      subject_uploaded_at: new Date().toISOString(),
+    }).eq('id', evaluationId);
+
+    res.json({ success: true, path: data.path });
+  } catch (err) {
+    console.error('subject error:', err);
+    res.status(500).json({ error: 'subject_upload_failed' });
+  }
+});
+
 // === UPLOAD ===
 app.post('/api/upload', upload.array('files', 100), async (req, res) => {
   try {
@@ -111,7 +152,7 @@ app.post('/api/extract', async (req, res) => {
 
     if (!signedUrl?.signedUrl) return res.status(500).json({ error: 'signed_url_failed' });
 
-    // Step 1 : OCR
+    // Step 1 : OCR de la copie
     const ocrResponse = await mistral.ocr.process({
       model: 'mistral-ocr-latest',
       document: { type: 'document_url', documentUrl: signedUrl.signedUrl },
@@ -119,8 +160,27 @@ app.post('/api/extract', async (req, res) => {
     });
     const ocrText = ocrResponse.pages?.map(p => p.markdown || '').join('\n\n') || '';
 
-    // Step 2 : Extraction structurée
+    // Step 2 : Extraction structurée (avec sujet optionnel)
     const evalData = copy.evaluations;
+    let promptContext = '';
+
+    // Si un sujet a été uploadé, on l'OCR et on l'ajoute au prompt
+    if (evalData.subject_storage_path) {
+      const { data: subjectSignedUrl } = await supabase.storage
+        .from('copies')
+        .createSignedUrl(evalData.subject_storage_path, 60);
+
+      if (subjectSignedUrl?.signedUrl) {
+        const subjectOcr = await mistral.ocr.process({
+          model: 'mistral-ocr-latest',
+          document: { type: 'document_url', documentUrl: subjectSignedUrl.signedUrl },
+          includeImageBase64: false,
+        });
+        const subjectText = subjectOcr.pages?.map(p => p.markdown || '').join('\n\n') || '';
+        promptContext = `\nSUJET DU CONTRÔLE (contexte) :\n"""\n${subjectText}\n"""\n`;
+      }
+    }
+
     const extraction = await mistral.chat.complete({
       model: 'mistral-small-latest',
       messages: [
@@ -130,7 +190,16 @@ app.post('/api/extract', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Barème : ${JSON.stringify(evalData.grading_scale)}\n${evalData.correct_answers ? `Bonnes réponses : ${JSON.stringify(evalData.correct_answers)}\n` : ''}\nTexte OCR :\n"""${ocrText}"""\n\nJSON strict : {"student_identifier": "eleve_XX" | null, "answers": {<id>: "réponse" | null, ...}, "confidence": 0..1}`,
+          content: `${evalData.subject_storage_path ? 'Voici le SUJET du contrôle (pour le contexte) et la COPIE de l\'élève. Extrait les réponses de l\'élève en te basant sur les questions du sujet.' : 'Voici la COPIE de l\'élève. Extrait ses réponses.'}
+
+${promptContext}Barème : ${JSON.stringify(evalData.grading_scale)}
+${evalData.correct_answers ? `Bonnes réponses : ${JSON.stringify(evalData.correct_answers)}\n` : ''}
+Texte OCR de la copie :
+"""
+${ocrText}
+"""
+
+JSON strict : {"student_identifier": "eleve_XX" | null, "answers": {<id>: "réponse" | null, ...}, "confidence": 0..1}`,
         },
       ],
       responseFormat: { type: 'json_object' },
