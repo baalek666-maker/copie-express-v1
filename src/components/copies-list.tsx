@@ -20,6 +20,8 @@ interface Copy {
   final_score: number | null;
   status: string;
   ocr_text?: string;
+  proposed_score?: number | null;
+  proposed_max_score?: number | null;
 }
 
 interface Question {
@@ -73,10 +75,15 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{copy.student_identifier || 'Élève inconnu'}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                       {isValidated && (
                         <span className="text-green-700 font-medium">
-                          Note: {copy.final_score} / {gradingScale.reduce((s, q) => s + q.max_points, 0)} pts
+                          Note validée : {copy.final_score} / {gradingScale.reduce((s, q) => s + q.max_points, 0)} pts
+                        </span>
+                      )}
+                      {!isValidated && copy.proposed_score !== null && copy.proposed_score !== undefined && (
+                        <span className="text-blue-700 font-medium">
+                          Note proposée : {copy.proposed_score} / {copy.proposed_max_score} pts
                         </span>
                       )}
                       {!isValidated && copy.confidence_score !== null && (
@@ -88,7 +95,7 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
                           Extraction en cours...
                         </span>
                       )}
-                      {isReady && (
+                      {isReady && copy.proposed_score === null && (
                         <span>Prêt à valider</span>
                       )}
                     </div>

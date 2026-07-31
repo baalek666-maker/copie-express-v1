@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS copies (
   validated_by_user BOOLEAN DEFAULT FALSE,
   user_corrections JSONB,
   final_score NUMERIC(4,2),
+  proposed_score NUMERIC(4,2),
+  proposed_max_score NUMERIC(4,2),
   status TEXT DEFAULT 'pending',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   processed_at TIMESTAMPTZ,
@@ -98,6 +100,13 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS suspended_reason TEXT;
 -- Sujet optionnel (evaluations)
 ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS subject_storage_path TEXT;
 ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS subject_uploaded_at TIMESTAMPTZ;
+
+-- Barème texte libre (le prof tape ses réponses attendues)
+ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS grading_key TEXT;
+
+-- Notes proposées par le système (avant validation prof)
+ALTER TABLE copies ADD COLUMN IF NOT EXISTS proposed_score NUMERIC(4,2);
+ALTER TABLE copies ADD COLUMN IF NOT EXISTS proposed_max_score NUMERIC(4,2);
 
 -- Colonnes nullable (V2 formulaire simplifié)
 ALTER TABLE evaluations ALTER COLUMN type DROP NOT NULL;

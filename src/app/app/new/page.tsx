@@ -6,6 +6,7 @@ import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
@@ -56,6 +57,7 @@ export default function NewEvaluationPage() {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [classLevel, setClassLevel] = useState('');
+  const [gradingKey, setGradingKey] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +74,9 @@ export default function NewEvaluationPage() {
         title,
         subject,
         class_level: classLevel,
-        total_copies: 0,  // Sera calculé depuis les uploads
-        grading_scale: [{ id: 'q1', label: 'Question 1', max_points: 1 }],  // Schéma minimal
+        grading_key: gradingKey.trim() || null,
+        total_copies: 0,
+        grading_scale: [{ id: 'q1', label: 'Question 1', max_points: 1 }],
         status: 'draft',
       })
       .select()
@@ -150,6 +153,25 @@ export default function NewEvaluationPage() {
                 </Select>
               </div>
             </div>
+
+            <div className="space-y-2 pt-2 border-t">
+              <Label htmlFor="gradingKey">
+                Barème <span className="text-sm font-normal text-muted-foreground">(optionnel mais recommandé)</span>
+              </Label>
+              <Textarea
+                id="gradingKey"
+                placeholder={`Une réponse attendue par ligne. Exemple :\n1. 4\n2. Paris\n3. La cellule`}
+                value={gradingKey}
+                onChange={(e) => setGradingKey(e.target.value)}
+                rows={6}
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Le système comparera chaque copie avec ce barème pour proposer une note.
+                <br />
+                <strong>Tu peux toujours corriger ou ajuster</strong> avant de valider.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -169,7 +191,7 @@ export default function NewEvaluationPage() {
         </div>
 
         <p className="text-xs text-center text-muted-foreground">
-          💡 Le système compte automatiquement les réponses correctes à partir du sujet uploadé.
+          💡 Sans barème, le système propose des notes indicatives basées sur le sujet. Tu valides tout.
         </p>
       </form>
     </div>

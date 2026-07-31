@@ -181,25 +181,81 @@ app.post('/api/extract', async (req, res) => {
       }
     }
 
+    // === Construction du prompt selon ce qui est disponible ===
+    const hasSubject = !!evalData.subject_storage_path;
+    const hasGradingKey = !!evalData.grading_key;
+
+    let userPrompt;
+    if (hasGradingKey) {
+      // MODE AVEC BARÈME : on demande une notation automatique
+      userPrompt = `Tu es un correcteur de copies d'élèves français.
+
+${hasSubject ? 'Voici le SUJET du contrôle, le BARÈME avec les bonnes réponses, puis la COPIE de l\'élève.' : 'Voici le BARÈME avec les bonnes réponses, puis la COPIE de l\'élève.'}
+
+${promptContext}
+BARÈME (bonnes réponses attendues, une par ligne) :
+"""
+${evalData.grading_key}
+"""
+
+COPIE DE L'ÉLÈVE (texte OCR) :
+"""
+${ocrText}
+"""
+
+TÂCHE :
+1. Identifie le numéro/nom de l'élève s'il est écrit sur la copie
+2. Pour CHAQUE question du barème, trouve la réponse de l'élève dans la copie
+3. Compare avec la bonne réponse du barème
+4. Note la réponse comme correcte (true) ou fausse (false)
+5. Tolère les fautes de frappe mineures (1-2 caractères) et les variations de casse
+6. Si l'élève n'a pas répondu ou a écrit "?" / "je sais pas" → false
+7. Si illisible → "unclear" + false
+
+JSON STRICT (rien d'autre) :
+{
+  "student_identifier": "eleve_001" | null,
+  "answers": [
+    {
+      "question_id": "1",
+      "student_wrote": "4" | null,
+      "expected": "4",
+      "is_correct": true | false,
+      "confidence": 0.0-1.0
+    },
+    ...
+  ],
+  "total_correct": <nombre entier>,
+  "total_questions": <nombre entier>,
+  "overall_confidence": 0.0-1.0
+}`;
+    } else {
+      // MODE SIMPLE : juste extraction des réponses (sans notation)
+      userPrompt = `${hasSubject ? 'Voici le SUJET et la COPIE de l\'élève. Extrait ses réponses en te basant sur les questions du sujet.' : 'Voici la COPIE de l\'élève. Extrait ses réponses.'}
+
+${promptContext}Texte OCR de la copie :
+"""
+${ocrText}
+"""
+
+JSON STRICT :
+{
+  "student_identifier": "eleve_XX" | null,
+  "answers": {"<question_id>": "réponse élève" | null, ...},
+  "confidence": 0.0-1.0
+}`;
+    }
+
     const extraction = await mistral.chat.complete({
       model: 'mistral-small-latest',
       messages: [
         {
           role: 'system',
-          content: 'Tu es un assistant qui extrait les réponses d\'une copie d\'élève à partir du texte OCR. Tu retournes UNIQUEMENT du JSON valide, aucun commentaire.',
+          content: 'Tu es un assistant qui extrait et compare des réponses d\'élèves. Tu retournes UNIQUEMENT du JSON valide, aucun commentaire.',
         },
         {
           role: 'user',
-          content: `${evalData.subject_storage_path ? 'Voici le SUJET du contrôle (pour le contexte) et la COPIE de l\'élève. Extrait les réponses de l\'élève en te basant sur les questions du sujet.' : 'Voici la COPIE de l\'élève. Extrait ses réponses.'}
-
-${promptContext}Barème : ${JSON.stringify(evalData.grading_scale)}
-${evalData.correct_answers ? `Bonnes réponses : ${JSON.stringify(evalData.correct_answers)}\n` : ''}
-Texte OCR de la copie :
-"""
-${ocrText}
-"""
-
-JSON strict : {"student_identifier": "eleve_XX" | null, "answers": {<id>: "réponse" | null, ...}, "confidence": 0..1}`,
+          content: userPrompt,
         },
       ],
       responseFormat: { type: 'json_object' },
@@ -208,11 +264,21 @@ JSON strict : {"student_identifier": "eleve_XX" | null, "answers": {<id>: "répo
 
     const parsed = JSON.parse(extraction.choices[0].message.content);
 
+    // Calcul du score total
+    let totalScore = null;
+    let maxScore = null;
+    if (hasGradingKey && parsed.answers && Array.isArray(parsed.answers)) {
+      totalScore = parsed.answers.filter(a => a.is_correct === true).length;
+      maxScore = parsed.total_questions || parsed.answers.length;
+    }
+
     // Update la copie
     await supabase.from('copies').update({
       ocr_text: ocrText,
       extracted_answers: parsed.answers,
-      confidence_score: parsed.confidence,
+      confidence_score: parsed.overall_confidence || parsed.confidence || 0,
+      proposed_score: totalScore,
+      proposed_max_score: maxScore,
       processed_at: new Date().toISOString(),
       status: 'ready_to_validate',
     }).eq('id', copyId);
