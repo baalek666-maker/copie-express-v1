@@ -20,8 +20,21 @@ CREATE TABLE IF NOT EXISTS users (
   subscription_status TEXT,
   subscription_plan TEXT,
   subscription_expires_at TIMESTAMPTZ,
+  -- Anti-abuse : trial
   trial_used BOOLEAN DEFAULT FALSE,
   trial_copies_count INTEGER DEFAULT 0,
+  trial_used_at TIMESTAMPTZ,
+  -- Anti-abuse : quota mensuel pour payants
+  monthly_copy_count INTEGER DEFAULT 0,
+  monthly_reset_at TIMESTAMPTZ,
+  -- Anti-abuse : fingerprint navigateur
+  fingerprint_hash TEXT,
+  fingerprint_account_count INTEGER DEFAULT 1,
+  -- Anti-abuse : dernière copie traitée (pour délai min)
+  last_copy_at TIMESTAMPTZ,
+  -- Anti-abuse : status modération (en cas d'abus répété)
+  is_suspended BOOLEAN DEFAULT FALSE,
+  suspended_reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -78,6 +91,9 @@ CREATE INDEX idx_copies_evaluation_id ON copies(evaluation_id);
 CREATE INDEX idx_copies_status ON copies(status);
 CREATE INDEX idx_exports_evaluation_id ON exports(evaluation_id);
 CREATE INDEX idx_exports_expires_at ON exports(expires_at);
+CREATE INDEX idx_users_fingerprint ON users(fingerprint_hash);
+CREATE INDEX idx_users_email_lower ON users(lower(email));
+CREATE INDEX idx_users_subscription_status ON users(subscription_status);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
@@ -143,3 +159,32 @@ CREATE TRIGGER update_evaluations_updated_at
   BEFORE UPDATE ON evaluations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- ANTI-ABUSE : Fonction d'incrément compteur mensuel
+-- ============================================
+CREATE OR REPLACE FUNCTION increment_monthly_count(user_id_param UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE users
+  SET monthly_copy_count = COALESCE(monthly_copy_count, 0) + 1,
+      last_copy_at = NOW()
+  WHERE id = user_id_param;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================
+-- ANTI-ABUSE : Cron reset mensuel (à héberger séparément)
+-- ============================================
+-- Cette fonction remet monthly_copy_count à 0 pour tous les users
+-- À appeler via un cron mensuel (Vercel Cron / GitHub Action / Railway)
+CREATE OR REPLACE FUNCTION reset_monthly_quotas()
+RETURNS void AS $$
+BEGIN
+  UPDATE users
+  SET monthly_copy_count = 0,
+      monthly_reset_at = date_trunc('month', NOW()) + INTERVAL '1 month'
+  WHERE subscription_status = 'active'
+    AND monthly_reset_at < NOW();
+END;
+$$ LANGUAGE plpgsql;

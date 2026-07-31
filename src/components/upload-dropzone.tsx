@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { runAntiAbuseAudit, generateFingerprint, registerFingerprint, incrementCopyCount } from '@/lib/anti-abuse';
 import { Button } from '@/components/ui/button';
 import { Upload, X, Loader2 } from 'lucide-react';
 
@@ -41,6 +42,28 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non connecté');
 
+      // === ANTI-ABUSE AUDIT ===
+      const audit = await runAntiAbuseAudit(user.id);
+      if (!audit.allowed) {
+        if (audit.quota.reason === 'trial_exhausted') {
+          throw new Error('Tu as utilisé tes 10 copies gratuites. Passe à un forfait pour continuer.');
+        }
+        if (audit.quota.reason === 'monthly_quota_exceeded') {
+          throw new Error(`Quota mensuel atteint. Tu pourras continuer le ${new Date(audit.quota.reset_at!).toLocaleDateString('fr-FR')}.`);
+        }
+        if (audit.quota.reason === 'account_suspended') {
+          throw new Error('Compte suspendu. Contacte le support.');
+        }
+        if (!audit.delay.allowed) {
+          throw new Error(`Patiente ${audit.delay.retry_after_seconds}s avant d'uploader une nouvelle copie.`);
+        }
+        throw new Error(`Action bloquée : ${audit.reasons.join(', ')}`);
+      }
+
+      // === ENREGISTREMENT FINGERPRINT (1 fois par user) ===
+      const fingerprint = generateFingerprint();
+      await registerFingerprint(user.id, fingerprint);
+
       // Upload via le backend Express
       const formData = new FormData();
       files.forEach((file) => formData.append('files', file));
@@ -74,10 +97,13 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
 
       setProgress(75);
 
+      // === INCRÉMENT COMPTEUR (pour les copies réellement uploadées) ===
+      for (let i = 0; i < result.paths.length; i++) {
+        await incrementCopyCount(user.id);
+      }
+
       // Lance l'extraction en arrière-plan (une par une ou par batch)
-      // Pour la V1, on lance juste pour la première copie. Le worker async fera le reste.
       if (result.paths.length > 0) {
-        // On récupère l'ID de la première copie insérée
         const { data: firstCopies } = await supabase
           .from('copies')
           .select('id')
@@ -89,7 +115,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
           fetch(`${backendUrl}/api/extract`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ evaluationId, copyId: copy.id }),
+            body: JSON.stringify({ evaluationId, copyId: copy.id, userId: user.id }),
           }).catch(console.error);
         }
       }

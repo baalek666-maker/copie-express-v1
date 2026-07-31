@@ -62,8 +62,34 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
 // === EXTRACT (Mistral OCR + LLM) ===
 app.post('/api/extract', async (req, res) => {
   try {
-    const { evaluationId, copyId } = req.body;
-    if (!evaluationId || !copyId) return res.status(400).json({ error: 'missing_params' });
+    const { evaluationId, copyId, userId } = req.body;
+    if (!evaluationId || !copyId || !userId) return res.status(400).json({ error: 'missing_params' });
+
+    // === ANTI-ABUSE BACKEND CHECK ===
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('subscription_status, subscription_plan, trial_used, trial_copies_count, monthly_copy_count, is_suspended')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) return res.status(404).json({ error: 'user_not_found' });
+
+    if (user.is_suspended) {
+      return res.status(403).json({ error: 'account_suspended' });
+    }
+
+    // Vérif quota (côté serveur = infaillible)
+    if (user.subscription_status !== 'active') {
+      if (user.trial_used || (user.trial_copies_count || 0) >= 10) {
+        return res.status(403).json({ error: 'trial_exhausted' });
+      }
+    } else {
+      const limits = { monthly: 1500, yearly: 2000, expert_yearly: 3000 };
+      const limit = limits[user.subscription_plan] || 1500;
+      if ((user.monthly_copy_count || 0) >= limit) {
+        return res.status(403).json({ error: 'monthly_quota_exceeded', limit });
+      }
+    }
 
     // Récupère la copie
     const { data: copy, error: copyError } = await supabase

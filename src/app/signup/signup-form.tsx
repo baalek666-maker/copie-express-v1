@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { isDisposableEmail } from '@/lib/anti-abuse';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +29,13 @@ export default function SignupForm() {
 
     if (!email || !fullName || !academy || !subject || !schoolLevel) {
       setError('Tous les champs sont requis.');
+      setLoading(false);
+      return;
+    }
+
+    // Anti-abuse : bloquer les emails jetables
+    if (isDisposableEmail(email)) {
+      setError('Les emails jetables (yopmail, tempmail, etc.) ne sont pas acceptés. Utilise ton email professionnel.');
       setLoading(false);
       return;
     }
