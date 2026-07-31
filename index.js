@@ -41,7 +41,7 @@ app.get('/api/health', (req, res) => {
 app.post('/api/upload', upload.array('files', 100), async (req, res) => {
   try {
     const { evaluationId, userId } = req.body;
-    const files = req.files as Express.Multer.File[];
+    const files = req.files;
     if (!files?.length) return res.status(400).json({ error: 'no_files' });
     if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
 
