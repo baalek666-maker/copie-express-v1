@@ -54,10 +54,6 @@ CREATE TABLE IF NOT EXISTS evaluations (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Colonnes nullable (V2 formulaire simplifié)
-ALTER TABLE evaluations ALTER COLUMN type DROP NOT NULL;
-ALTER TABLE evaluations ALTER COLUMN grading_scale DROP NOT NULL;
-
 -- Table COPIES
 CREATE TABLE IF NOT EXISTS copies (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -87,6 +83,26 @@ CREATE TABLE IF NOT EXISTS exports (
   download_count INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 1b. MIGRATIONS ALTER TABLE (idempotent pour DB existantes)
+-- Anti-abus (users)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_used_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS monthly_copy_count INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS monthly_reset_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS fingerprint_hash TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS fingerprint_account_count INTEGER DEFAULT 1;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_copy_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS suspended_reason TEXT;
+
+-- Sujet optionnel (evaluations)
+ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS subject_storage_path TEXT;
+ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS subject_uploaded_at TIMESTAMPTZ;
+
+-- Colonnes nullable (V2 formulaire simplifié)
+ALTER TABLE evaluations ALTER COLUMN type DROP NOT NULL;
+ALTER TABLE evaluations ALTER COLUMN grading_scale DROP NOT NULL;
+ALTER TABLE evaluations ALTER COLUMN total_copies SET DEFAULT 0;
 
 -- 2. INDEXES
 CREATE INDEX IF NOT EXISTS idx_evaluations_user_id ON evaluations(user_id);
