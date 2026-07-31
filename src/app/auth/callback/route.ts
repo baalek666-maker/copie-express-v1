@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -7,18 +8,22 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/app';
 
   if (code) {
-    const response = NextResponse.redirect(`${origin}${next}`);
+    const cookieStore = cookies();
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() { return request.cookies.getAll(); },
+          getAll() { return cookieStore.getAll(); },
           setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options);
-            });
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // Server Component context can't set cookies — handled by Route Handler
+            }
           },
         },
       }
@@ -27,8 +32,10 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return response;
+      return NextResponse.redirect(`${origin}${next}`);
     }
+
+    console.error('Auth callback error:', error);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
