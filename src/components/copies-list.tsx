@@ -68,26 +68,32 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
         const isPending = copy.status === 'pending' || copy.status === 'processing';
 
         return (
-          <Card key={copy.id} className={isValidated ? 'border-green-200 bg-green-50/30' : ''}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{copy.student_identifier || 'Élève inconnu'}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+          <Card key={copy.id} className={isValidated ? 'border-green-300 bg-green-50/50' : ''}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+                    isValidated ? 'bg-green-100 text-green-700' : 'bg-secondary'
+                  }`}>
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{copy.student_identifier || 'Élève inconnu'}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-0.5">
                       {isValidated && (
                         <span className="text-green-700 font-medium">
-                          Note validée : {copy.final_score} / {gradingScale.reduce((s, q) => s + q.max_points, 0)} pts
+                          ✓ Note validée : {copy.final_score} / {gradingScale.reduce((s, q) => s + q.max_points, 0)} pts
                         </span>
                       )}
                       {!isValidated && copy.proposed_score !== null && copy.proposed_score !== undefined && (
                         <span className="text-blue-700 font-medium">
-                          Note proposée : {copy.proposed_score} / {copy.proposed_max_score} pts
+                          📊 Note proposée : {copy.proposed_score} / {copy.proposed_max_score} pts
                         </span>
                       )}
                       {!isValidated && copy.confidence_score !== null && (
-                        <span>Fiabilité d'extraction : {Math.round(copy.confidence_score * 100)}%</span>
+                        <span className="text-muted-foreground">
+                          · Fiabilité {Math.round(copy.confidence_score * 100)}%
+                        </span>
                       )}
                       {isPending && (
                         <span className="flex items-center gap-1 text-amber-600">
@@ -102,13 +108,14 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {isValidated ? (
-                    <Badge variant="success">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Validée
+                <div className="flex items-center gap-2 shrink-0">
+                  {isValidated && (
+                    <Badge variant="success" className="flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      OK
                     </Badge>
-                  ) : isReady ? (
+                  )}
+                  {isReady && !isValidated && (
                     <>
                       <Button size="sm" variant="outline" onClick={() => setEditingCopy(copy)}>
                         <Edit3 className="h-3 w-3 mr-1" />
@@ -118,7 +125,7 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
                         Valider ✓
                       </Button>
                     </>
-                  ) : null}
+                  )}
                 </div>
               </div>
             </CardContent>

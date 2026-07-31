@@ -37,6 +37,76 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'copie-express-backend', timestamp: new Date().toISOString() });
 });
 
+// === UPLOAD BARÈME (optionnel, 1 fois par évaluation) ===
+// Upload une PHOTO du barème (ou PDF), OCR Mistral pour extraire le texte
+app.post('/api/grading-key', upload.single('file'), async (req, res) => {
+  try {
+    const { evaluationId, userId } = req.body;
+    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
+    if (!req.file) return res.status(400).json({ error: 'no_file' });
+
+    // Vérifier que l'éval appartient au user
+    const { data: evalData, error: evalError } = await supabase
+      .from('evaluations')
+      .select('id, user_id')
+      .eq('id', evaluationId)
+      .eq('user_id', userId)
+      .single();
+
+    if (evalError || !evalData) return res.status(404).json({ error: 'evaluation_not_found' });
+
+    // Upload l'image dans le bucket copies
+    const filename = `${userId}/${evaluationId}/grading_key_${Date.now()}_${req.file.originalname}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('copies')
+      .upload(filename, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+
+    if (uploadError) {
+      console.error('grading key upload error:', uploadError);
+      return res.status(500).json({ error: 'upload_failed' });
+    }
+
+    // OCR du barème via Mistral OCR
+    const { data: signedUrl } = await supabase.storage
+      .from('copies')
+      .createSignedUrl(filename, 60);
+
+    if (!signedUrl?.signedUrl) {
+      return res.status(500).json({ error: 'signed_url_failed' });
+    }
+
+    const ocrResponse = await mistral.ocr.process({
+      model: 'mistral-ocr-latest',
+      document: { type: 'document_url', documentUrl: signedUrl.signedUrl },
+      includeImageBase64: false,
+    });
+
+    const rawText = ocrResponse.pages?.map(p => p.markdown || '').join('\n\n') || '';
+
+    // Nettoyage du texte OCR pour avoir un barème lisible
+    const cleanedText = rawText
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    // Update l'évaluation avec le barème texte
+    await supabase.from('evaluations').update({
+      grading_key: cleanedText,
+      grading_key_storage_path: filename,
+      grading_key_uploaded_at: new Date().toISOString(),
+    }).eq('id', evaluationId);
+
+    res.json({
+      success: true,
+      path: filename,
+      extracted_text: cleanedText,
+      pages: ocrResponse.pages?.length || 0,
+    });
+  } catch (err) {
+    console.error('grading key error:', err);
+    res.status(500).json({ error: 'grading_key_failed', details: err.message });
+  }
+});
+
 // === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
 app.post('/api/subject', upload.single('file'), async (req, res) => {
   try {

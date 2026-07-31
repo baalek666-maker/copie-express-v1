@@ -104,6 +104,10 @@ ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS subject_uploaded_at TIMESTAMPTZ
 -- Barème texte libre (le prof tape ses réponses attendues)
 ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS grading_key TEXT;
 
+-- Photo du barème upload (optionnel, sert de source pour l'OCR)
+ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS grading_key_storage_path TEXT;
+ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS grading_key_uploaded_at TIMESTAMPTZ;
+
 -- Notes proposées par le système (avant validation prof)
 ALTER TABLE copies ADD COLUMN IF NOT EXISTS proposed_score NUMERIC(4,2);
 ALTER TABLE copies ADD COLUMN IF NOT EXISTS proposed_max_score NUMERIC(4,2);
