@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/button';
@@ -13,17 +14,38 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createBrowserSupabase();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Gère le callback directement côté client
+  useEffect(() => {
+    const handleCallback = async () => {
+      const code = searchParams.get('code');
+      if (!code) return;
+
+      const supabase = createBrowserSupabase();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        router.push('/app');
+        router.refresh();
+      } else {
+        setError('Lien invalide ou expiré. Demande un nouveau lien.');
+      }
+    };
+
+    handleCallback();
+  }, [searchParams, router]);
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    const supabase = createBrowserSupabase();
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
       },
     });
 
