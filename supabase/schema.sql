@@ -86,14 +86,14 @@ CREATE TABLE IF NOT EXISTS exports (
 );
 
 -- Indexes
-CREATE INDEX idx_evaluations_user_id ON evaluations(user_id);
-CREATE INDEX idx_copies_evaluation_id ON copies(evaluation_id);
-CREATE INDEX idx_copies_status ON copies(status);
-CREATE INDEX idx_exports_evaluation_id ON exports(evaluation_id);
-CREATE INDEX idx_exports_expires_at ON exports(expires_at);
-CREATE INDEX idx_users_fingerprint ON users(fingerprint_hash);
-CREATE INDEX idx_users_email_lower ON users(lower(email));
-CREATE INDEX idx_users_subscription_status ON users(subscription_status);
+CREATE INDEX IF NOT EXISTS idx_evaluations_user_id ON evaluations(user_id);
+CREATE INDEX IF NOT EXISTS idx_copies_evaluation_id ON copies(evaluation_id);
+CREATE INDEX IF NOT EXISTS idx_copies_status ON copies(status);
+CREATE INDEX IF NOT EXISTS idx_exports_evaluation_id ON exports(evaluation_id);
+CREATE INDEX IF NOT EXISTS idx_exports_expires_at ON exports(expires_at);
+CREATE INDEX IF NOT EXISTS idx_users_fingerprint ON users(fingerprint_hash);
+CREATE INDEX IF NOT EXISTS idx_users_email_lower ON users(lower(email));
+CREATE INDEX IF NOT EXISTS idx_users_subscription_status ON users(subscription_status);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
