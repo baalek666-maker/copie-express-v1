@@ -29,8 +29,8 @@ export default function PrivacyPage() {
         <ul>
           <li>Évaluations créées (titre, type, matière, barème)</li>
           <li>Photos de copies d&apos;élèves uploadées</li>
-          <li>Texte extrait par OCR des copies</li>
-          <li>Réponses des élèves extraites par intelligence artificielle</li>
+          <li>Texte extrait des copies par notre système de reconnaissance</li>
+          <li>Réponses des élèves identifiées automatiquement</li>
           <li>Notes finales validées par l&apos;enseignant</li>
           <li>Exports générés (CSV SACoche, Pronote)</li>
         </ul>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         <h2>3. Finalités du traitement</h2>
         <p>Vos données sont utilisées pour :</p>
         <ul>
-          <li>Fournir le service d&apos;extraction OCR et d&apos;assistance à la correction</li>
+          <li>Fournir le service d&apos;extraction automatique et d&apos;assistance à la saisie</li>
           <li>Gérer votre compte utilisateur et votre abonnement</li>
           <li>Vous envoyer des emails transactionnels (confirmation, reçu, alertes de quota)</li>
           <li>Assurer la sécurité du service et prévenir les abus</li>
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
           <tbody>
             <tr><td>Supabase Inc.</td><td>Base de données, authentification, stockage fichiers</td><td>Frankfurt, UE (Irlande par défaut)</td><td>DPO, DPA signé, hébergement UE</td></tr>
             <tr><td>Vercel Inc.</td><td>Hébergement du site web</td><td>Edge network mondial (US, EU, Asie)</td><td>DPA, chiffrement TLS</td></tr>
-            <tr><td>Mistral AI</td><td>Extraction OCR et LLM</td><td>France (UE)</td><td>Pas de conservation des données, DPA</td></tr>
+            <tr><td>Prestataire d&apos;extraction (UE)</td><td>Extraction automatique des réponses sur les copies</td><td>France (UE)</td><td>Pas de conservation des données, DPA</td></tr>
             <tr><td>Resend</td><td>Envoi d&apos;emails transactionnels</td><td>US (siège), edge network mondial</td><td>DPA, transfert via Standard Contractual Clauses</td></tr>
             <tr><td>Stripe</td><td>Paiement en ligne</td><td>US (siège), hébergement UE</td><td>PCI-DSS niveau 1, DPA signé</td></tr>
           </tbody>
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
 
         <h2>6. Durée de conservation</h2>
         <ul>
-          <li><strong>Photos de copies et texte OCR :</strong> 30 jours après la création de l&apos;évaluation (suppression automatique)</li>
+          <li><strong>Photos de copies et texte extrait :</strong> 30 jours après la création de l&apos;évaluation (suppression automatique)</li>
           <li><strong>Évaluations et barèmes :</strong> tant que le compte est actif</li>
           <li><strong>Notes finales validées :</strong> tant que le compte est actif (export recommandé par l&apos;enseignant)</li>
           <li><strong>Données de compte :</strong> tant que le compte est actif + 3 ans après suppression (obligation comptable)</li>

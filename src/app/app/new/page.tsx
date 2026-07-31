@@ -169,7 +169,7 @@ export default function NewEvaluationPage() {
         </div>
 
         <p className="text-xs text-center text-muted-foreground">
-          💡 Pas de barème à définir maintenant. Mistral compte automatiquement le nombre de réponses correctes.
+          💡 Le système compte automatiquement les réponses correctes à partir du sujet uploadé.
         </p>
       </form>
     </div>

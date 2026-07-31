@@ -78,7 +78,7 @@ export default function PricingPage() {
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold">Choisis ton forfait</h1>
           <p className="text-lg text-muted-foreground">
-            Tous les forfaits incluent l'accès à l'OCR Mistral, l'export SACoche/Pronote, et la conformité RGPD.
+            Tous les forfaits incluent l'extraction automatique des réponses, l'export SACoche/Pronote, et la conformité RGPD.
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <span className="flex items-center gap-1">✓ Sans engagement</span>

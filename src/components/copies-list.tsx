@@ -80,7 +80,7 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
                         </span>
                       )}
                       {!isValidated && copy.confidence_score !== null && (
-                        <span>Confiance OCR : {Math.round(copy.confidence_score * 100)}%</span>
+                        <span>Fiabilité d'extraction : {Math.round(copy.confidence_score * 100)}%</span>
                       )}
                       {isPending && (
                         <span className="flex items-center gap-1 text-amber-600">
@@ -171,7 +171,7 @@ function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
             <div>
               <h2 className="text-xl font-bold">{copy.student_identifier || 'Élève inconnu'}</h2>
               <p className="text-sm text-muted-foreground">
-                Vérifie les réponses extraites par l'OCR. Corrige si nécessaire.
+                Vérifie les réponses extraites automatiquement. Corrige si nécessaire.
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
@@ -179,7 +179,7 @@ function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
 
           {copy.ocr_text && (
             <details className="rounded-md bg-secondary/30 p-3 text-xs">
-              <summary className="cursor-pointer font-medium">Voir le texte OCR brut</summary>
+              <summary className="cursor-pointer font-medium">Voir le texte extrait</summary>
               <pre className="mt-2 whitespace-pre-wrap font-mono text-xs">{copy.ocr_text}</pre>
             </details>
           )}

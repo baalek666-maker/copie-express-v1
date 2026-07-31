@@ -34,7 +34,7 @@ SaaS d'assistance à la saisie de copies d'évaluations scolaires, ciblé profs 
    - New bucket : `exports`, **Private**
 6. Settings > API : copier `URL` + `anon public key` + `service_role key` (⚠️ garder service_role SECRET)
 
-### Étape 2 — Créer un compte Mistral AI (10 min)
+### Étape 2 — Créer un compte prestataire d'extraction (10 min)
 
 1. https://console.mistral.ai → Sign up
 2. **API Keys** → Create new key → copier
@@ -69,7 +69,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
 
-# === Mistral AI ===
+# === Prestataire d'extraction ===
 MISTRAL_API_KEY=xxx
 
 # === Stripe (à ajouter plus tard) ===
@@ -123,7 +123,7 @@ copie-express-v1/
 │   ├── components/           # Composants shadcn/ui
 │   └── lib/
 │       ├── supabase.ts       # Client Supabase (browser + server)
-│       ├── mistral.ts        # OCR + extraction
+│       ├── extractor.ts        # extraction des réponses
 │       ├── stripe.ts         # Paiement
 │       └── utils.ts          # cn(), formatPrice(), etc.
 ├── server/
@@ -154,7 +154,7 @@ copie-express-v1/
 
 ### Backend (Express)
 - [x] POST /api/upload (upload photos vers Supabase Storage)
-- [x] POST /api/extract (Mistral OCR + LLM extraction)
+- [x] POST /api/extract (extraction automatique)
 - [x] POST /api/export (génère CSV SACoche/Pronote)
 - [x] POST /api/stripe/webhook (à activer quand tu auras Stripe)
 - [x] POST /api/cron/cleanup (suppression RGPD à 30j)
@@ -162,7 +162,7 @@ copie-express-v1/
 
 ### Libs (intégrations)
 - [x] src/lib/supabase.ts (createServerClient + createBrowserClient)
-- [x] src/lib/mistral.ts (runOCR + extractAnswers)
+- [x] src/lib/extractor.ts (runOCR + extractAnswers)
 - [x] src/lib/stripe.ts (PLANS + createCheckoutSession)
 - [x] src/lib/utils.ts (cn + formatPrice + generateStudentCode)
 

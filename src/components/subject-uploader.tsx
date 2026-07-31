@@ -68,7 +68,7 @@ export function SubjectUploader({ evaluationId, existingSubjectPath }: {
             Sujet uploadé ✓
           </CardTitle>
           <CardDescription>
-            L'extraction Mistral utilise le sujet comme contexte. Tu peux le remplacer si besoin.
+            L'extraction automatique utilise le sujet comme contexte. Tu peux le remplacer si besoin.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -87,7 +87,7 @@ export function SubjectUploader({ evaluationId, existingSubjectPath }: {
         </CardTitle>
         <CardDescription>
           Si les questions sont sur une feuille séparée des réponses des élèves, upload le sujet ici.
-          Ça améliore fortement la qualité de l'extraction Mistral.
+          Ça améliore fortement la qualité de l'extraction automatique.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -19,7 +19,7 @@ export default function CGUPage() {
         <hr />
 
         <h2>1. Présentation du service</h2>
-        <p>Copie Express est un service d&apos;assistance à la saisie administrative d&apos;évaluations scolaires. Il permet aux enseignants de photographier ou scanner leurs copies d&apos;élèves, d&apos;en extraire automatiquement les réponses via reconnaissance optique de caractères (OCR) et intelligence artificielle, puis de générer des fichiers d&apos;export compatibles avec les logiciels de gestion scolaire (SACoche, Pronote).</p>
+        <p>Copie Express est un service d&apos;assistance à la saisie administrative d&apos;évaluations scolaires. Il permet aux enseignants de photographier ou scanner leurs copies d&apos;élèves, d&apos;en extraire automatiquement les réponses via un système de reconnaissance d&apos;écriture, puis de générer des fichiers d&apos;export compatibles avec les logiciels de gestion scolaire (SACoche, Pronote).</p>
         <p><strong>Copie Express est un outil d&apos;aide à la saisie administrative. Il ne procède à aucune évaluation des élèves ni à aucune notation. La validation finale des notes et appréciations reste de la responsabilité exclusive de l&apos;enseignant.</strong></p>
         <p>Le service n&apos;est pas destiné aux épreuves officielles du système éducatif français (DNB, baccalauréat, contrôle continu officiel). Pour ces évaluations, l&apos;enseignant doit utiliser les outils officiels mis à disposition par le Ministère de l&apos;Éducation nationale.</p>
 
@@ -46,14 +46,14 @@ export default function CGUPage() {
         <ul>
           <li>10 copies offertes à l&apos;inscription, sans carte bancaire</li>
           <li>Une seule fois par utilisateur (mesures anti-abus)</li>
-          <li>Fonctionnalités : OCR, export CSV basique</li>
+          <li>Fonctionnalités : extraction automatique, export CSV basique</li>
         </ul>
         <h3>4.2 Forfait Mensuel</h3>
         <ul>
           <li>Prix : 10 € TTC / mois</li>
           <li>Copies illimitées (jusqu&apos;à 1 500 / mois, mesures anti-abus)</li>
           <li>Sans engagement, résiliation à tout moment</li>
-          <li>Fonctionnalités : OCR, export SACoche, export Pronote, support prioritaire</li>
+          <li>Fonctionnalités : extraction automatique, export SACoche, export Pronote, support prioritaire</li>
         </ul>
         <h3>4.3 Forfait Annuel Standard</h3>
         <ul>
@@ -98,7 +98,7 @@ export default function CGUPage() {
         <h3>7.1 Sur le service</h3>
         <p>L&apos;ensemble des éléments du service (code, design, textes, logos) est la propriété exclusive de l&apos;éditeur. Toute reproduction est interdite.</p>
         <h3>7.2 Sur les données utilisateur</h3>
-        <p>L&apos;utilisateur conserve l&apos;entière propriété des copies qu&apos;il télécharge et des données qu&apos;il renseigne. Il concède à l&apos;éditeur une licence limitée au traitement technique nécessaire à la fourniture du service (OCR, extraction, export).</p>
+        <p>L&apos;utilisateur conserve l&apos;entière propriété des copies qu&apos;il télécharge et des données qu&apos;il renseigne. Il concède à l&apos;éditeur une licence limitée au traitement technique nécessaire à la fourniture du service (extraction automatique, export).</p>
         <h3>7.3 Sur les barèmes experts (forfait Expert uniquement)</h3>
         <p>Les barèmes partagés via la bibliothèque Expert restent la propriété de leurs auteurs. La redistribution en dehors du service est interdite.</p>
 
@@ -115,7 +115,7 @@ export default function CGUPage() {
         <h3>9.1 Qualité du service</h3>
         <p>L&apos;éditeur s&apos;efforce d&apos;assurer la disponibilité du service 24h/24, 7j/7, mais ne peut garantir une disponibilité absolue. En cas d&apos;interruption pour maintenance ou cas de force majeure, l&apos;éditeur ne saurait être tenu responsable.</p>
         <h3>9.2 Qualité de l&apos;extraction</h3>
-        <p>L&apos;OCR et l&apos;extraction par intelligence artificielle peuvent comporter des erreurs. <strong>L&apos;utilisateur est seul responsable de la validation finale des notes.</strong> L&apos;éditeur ne saurait être tenu responsable en cas d&apos;erreur d&apos;extraction ayant des conséquences sur la notation des élèves.</p>
+        <p>L&apos;extraction automatique peut comporter des erreurs. <strong>L&apos;utilisateur est seul responsable de la validation finale des notes.</strong> L&apos;éditeur ne saurait être tenu responsable en cas d&apos;erreur d&apos;extraction ayant des conséquences sur la notation des élèves.</p>
         <h3>9.3 Dommages</h3>
         <p>En tout état de cause, la responsabilité de l&apos;éditeur est limitée au montant des sommes versées par l&apos;utilisateur au cours des 12 derniers mois.</p>
 

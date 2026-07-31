@@ -195,7 +195,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
               <p className="text-xs text-muted-foreground">
                 {progress < 50 && 'Upload en cours...'}
                 {progress >= 50 && progress < 75 && 'Création des copies...'}
-                {progress >= 75 && progress < 100 && 'Extraction OCR + LLM en arrière-plan...'}
+                {progress >= 75 && progress < 100 && 'Extraction en arrière-plan...'}
                 {progress === 100 && 'Terminé ✓'}
               </p>
             </div>
