@@ -39,11 +39,10 @@ export default function SignupForm() {
       setLoading(false);
       return;
     }
-
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
         data: { full_name: fullName, academy, subject, school_level: schoolLevel },
       },
     });
