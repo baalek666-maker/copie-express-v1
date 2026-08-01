@@ -18,10 +18,12 @@ export function SubjectUploader({
   const supabase = createBrowserSupabase();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handlePhotoUpload = async (file: File) => {
     setUploading(true);
     setError(null);
+    setSuccess(false);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -46,8 +48,14 @@ export function SubjectUploader({
       const result = await response.json();
       console.log('[SUBJECT UPLOAD] success:', result);
 
+      // Afficher succès immédiatement
+      setSuccess(true);
       setUploading(false);
-      router.refresh();
+      // Attendre 1.5s pour que le user voie le message
+      setTimeout(() => {
+        router.refresh();
+        setSuccess(false);
+      }, 1500);
     } catch (err: any) {
       console.error('[SUBJECT UPLOAD] error:', err);
       setError(err.message || 'Erreur lors de l\'upload');
@@ -140,6 +148,13 @@ export function SubjectUploader({
           <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive mt-3 flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-900 mt-3 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            Sujet uploadé avec succès ! La page va se rafraîchir...
           </div>
         )}
       </CardContent>
