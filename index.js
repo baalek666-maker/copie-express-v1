@@ -36,8 +36,38 @@ async function mistralChat(messages, jsonMode = true) {
   return jsonMode ? JSON.parse(content) : content;
 }
 
-async function mistralOcr(documentUrl) {
-  const response = await fetch(`${MISTRAL_API_URL}/ocr`, {
+// Télécharge le fichier depuis Supabase, l'upload sur Mistral, puis fait l'OCR
+// (Mistral ne peut pas fetch les URLs Supabase signées → on upload directement)
+async function mistralOcr(supabaseSignedUrl) {
+  // Step 1 : télécharger le fichier depuis Supabase
+  const fileResponse = await fetch(supabaseSignedUrl);
+  if (!fileResponse.ok) {
+    throw new Error(`Failed to download file from Supabase: ${fileResponse.status}`);
+  }
+  const fileBuffer = await fileResponse.arrayBuffer();
+  const contentType = fileResponse.headers.get('content-type') || 'image/jpeg';
+
+  // Step 2 : upload vers Mistral Files API
+  const formData = new FormData();
+  formData.append('file', new Blob([fileBuffer], { type: contentType }), 'document');
+  formData.append('purpose', 'ocr');
+
+  const uploadResponse = await fetch(`https://api.mistral.ai/v1/files`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+    },
+    body: formData,
+  });
+  if (!uploadResponse.ok) {
+    const err = await uploadResponse.text();
+    throw new Error(`Mistral upload failed (${uploadResponse.status}): ${err}`);
+  }
+  const fileData = await uploadResponse.json();
+  const fileId = fileData.id;
+
+  // Step 3 : OCR avec file_id
+  const ocrResponse = await fetch(`${MISTRAL_API_URL}/ocr`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -45,15 +75,15 @@ async function mistralOcr(documentUrl) {
     },
     body: JSON.stringify({
       model: 'mistral-ocr-latest',
-      document: { type: 'document_url', document_url: documentUrl },
+      document: { type: 'file', file_id: fileId },
       include_image_base64: false,
     }),
   });
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Mistral OCR ${response.status}: ${err}`);
+  if (!ocrResponse.ok) {
+    const err = await ocrResponse.text();
+    throw new Error(`Mistral OCR ${ocrResponse.status}: ${err}`);
   }
-  const data = await response.json();
+  const data = await ocrResponse.json();
   return data.pages?.map(p => p.markdown || '').join('\n\n') || '';
 }
 
