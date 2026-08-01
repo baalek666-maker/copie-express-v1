@@ -393,7 +393,10 @@ JSON STRICT :
 
     res.json({ success: true, copyId, parsed });
   } catch (err) {
-    console.error('extract error:', err);
+    console.error('=== EXTRACT ERROR ===');
+    console.error('copyId:', copyId);
+    console.error('error:', err);
+    console.error('======================');
     res.status(500).json({ error: 'extract_failed', details: err.message });
   }
 });
