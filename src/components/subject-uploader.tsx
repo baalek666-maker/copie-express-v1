@@ -38,12 +38,19 @@ export function SubjectUploader({
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erreur ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[SUBJECT UPLOAD] success:', result);
 
       setUploading(false);
       router.refresh();
     } catch (err: any) {
-      setError(err.message);
+      console.error('[SUBJECT UPLOAD] error:', err);
+      setError(err.message || 'Erreur lors de l\'upload');
       setUploading(false);
     }
   };
