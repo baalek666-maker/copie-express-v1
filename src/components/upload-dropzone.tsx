@@ -120,8 +120,8 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
               body: JSON.stringify({ evaluationId, copyId: copy.id, userId: user.id }),
             });
             if (!extractRes.ok) {
-              console.error('[extract] failed for copy', copy.id, await extractRes.text());
-            }
+                      console.error('[extract] failed for copy', copy.id);
+                    }
           } catch (err) {
             console.error('[extract] error for copy', copy.id, err);
           }

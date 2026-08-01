@@ -151,9 +151,8 @@ app.get('/api/health', (req, res) => {
 // === UPLOAD BARÈME (optionnel, 1 fois par évaluation) ===
 // Upload une PHOTO du barème (ou PDF), OCR Mistral pour extraire le texte
 app.post('/api/grading-key', upload.single('file'), async (req, res) => {
-  console.log('[GRADING-KEY] request received, headers:', req.headers['content-type']);
-  console.log('[GRADING-KEY] body keys:', Object.keys(req.body));
-  console.log('[GRADING-KEY] file:', req.file ? { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype } : null);
+  const DEBUG = process.env.NODE_ENV !== 'production';
+  if (DEBUG) console.log('[GRADING-KEY] file:', req.file?.originalname);
   try {
     const { evaluationId, userId } = req.body;
     if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params', received: { evaluationId: !!evaluationId, userId: !!userId } });
@@ -217,16 +216,14 @@ app.post('/api/grading-key', upload.single('file'), async (req, res) => {
 
 // === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
 app.post('/api/subject', upload.single('file'), async (req, res) => {
-  console.log('[SUBJECT] request received, headers:', req.headers['content-type']);
-  console.log('[SUBJECT] body keys:', Object.keys(req.body));
-  console.log('[SUBJECT] file:', req.file ? { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype } : null);
+  const DEBUG = process.env.NODE_ENV !== 'production';
+  if (DEBUG) console.log('[SUBJECT] file:', req.file?.originalname);
   try {
     const { evaluationId, userId } = req.body;
     if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params', received: { evaluationId: !!evaluationId, userId: !!userId } });
     if (!req.file) return res.status(400).json({ error: 'no_file', hint: 'multer did not parse the file' });
 
     // Vérifier que l'éval appartient au user
-    console.log('[SUBJECT] Checking evaluation:', evaluationId, 'for user:', userId);
     const { data: evalData, error: evalError } = await supabase
       .from('evaluations')
       .select('id, user_id')
@@ -234,17 +231,14 @@ app.post('/api/subject', upload.single('file'), async (req, res) => {
       .eq('user_id', userId)
       .single();
 
-    console.log('[SUBJECT] evalData:', evalData, 'evalError:', evalError);
     if (evalError || !evalData) return res.status(404).json({ error: 'evaluation_not_found', evalError: evalError?.message });
 
     // Upload le sujet dans le bucket copies
     const filename = `${userId}/${evaluationId}/subject_${Date.now()}_${req.file.originalname}`;
-    console.log('[SUBJECT] uploading to storage:', filename);
     const { data, error } = await supabase.storage
       .from('copies')
       .upload(filename, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
 
-    console.log('[SUBJECT] storage result:', { data, error });
     if (error) {
       console.error('subject upload error:', error);
       return res.status(500).json({ error: 'upload_failed', details: error.message });
@@ -297,7 +291,7 @@ app.post('/api/extract', async (req, res) => {
   }
 
   try {
-    console.log('[EXTRACT] start for copyId:', copyId);
+    if (DEBUG) console.log('[EXTRACT] start for copyId:', copyId);
 
     // === ANTI-ABUSE BACKEND CHECK ===
     const { data: user, error: userError } = await supabase
@@ -578,9 +572,20 @@ function getAppreciation(ratio) {
 
 // === STRIPE WEBHOOK ===
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
+  // Vérification signature Stripe
+  const signature = req.headers['stripe-signature'];
+  if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return res.status(400).json({ error: 'missing_signature' });
+  }
+  let event;
   try {
-    const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const Stripe = (await import('stripe')).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+    event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).json({ error: 'invalid_signature', details: err.message });
+  }
+  try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const userId = session.metadata.user_id;
@@ -601,6 +606,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 // === CRON RGPD : suppression copies > 30 jours ===
 // À héberger séparément (ex: GitHub Action cron, Railway cron, Vercel cron)
 app.post('/api/cron/cleanup', async (req, res) => {
+  // Sécurisé par un secret partagé (CRON_SECRET)
+  const cronSecret = req.headers['x-cron-secret'] || req.body?.secret;
+  if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+    return res.status(403).json({ error: 'unauthorized' });
+  }
   try {
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: expiredCopies } = await supabase

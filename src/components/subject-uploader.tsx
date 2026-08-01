@@ -46,7 +46,6 @@ export function SubjectUploader({
       }
 
       const result = await response.json();
-      console.log('[SUBJECT UPLOAD] success:', result);
 
       // Afficher succès immédiatement
       setSuccess(true);
@@ -57,7 +56,6 @@ export function SubjectUploader({
         setSuccess(false);
       }, 1500);
     } catch (err: any) {
-      console.error('[SUBJECT UPLOAD] error:', err);
       setError(err.message || 'Erreur lors de l\'upload');
       setUploading(false);
     }

@@ -73,7 +73,7 @@ export default function NewEvaluationPage() {
         subject,
         class_level: classLevel,
         grading_key: null,
-        total_copies: 0,
+        total_copies: 1,
         grading_scale: [{ id: 'q1', label: 'Question 1', max_points: 1 }],
         status: 'draft',
       })
