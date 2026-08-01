@@ -32,7 +32,7 @@ export function GradingKeyEditor({
       formData.append('evaluationId', evaluationId);
       formData.append('userId', user.id);
 
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://copie-express-v1-production.up.railway.app';
       const response = await fetch(`${backendUrl}/api/grading-key`, {
         method: 'POST',
         body: formData,

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   // Proxy vers Express
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://copie-express-v1-production.up.railway.app';
   const response = await fetch(`${backendUrl}/api/export`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
