@@ -285,6 +285,7 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
 
 // === EXTRACT (Mistral OCR + LLM) ===
 app.post('/api/extract', async (req, res) => {
+  const DEBUG = process.env.NODE_ENV !== 'production';
   const { evaluationId, copyId, userId } = req.body;
   if (!evaluationId || !copyId || !userId) {
     return res.status(400).json({ error: 'missing_params' });
