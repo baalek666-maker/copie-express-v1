@@ -12,6 +12,7 @@ import { UploadDropzone } from '@/components/upload-dropzone';
 import { CopiesList } from '@/components/copies-list';
 import { SubjectUploader } from '@/components/subject-uploader';
 import { GradingKeyEditor } from '@/components/grading-key-editor';
+import { PhotoTips } from '@/components/photo-tips';
 
 export default async function EvaluationDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabase();
@@ -118,6 +119,8 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
       </div>
 
       <div className="space-y-6">
+        <PhotoTips />
+
         <SubjectUploader
           evaluationId={params.id}
           existingSubjectPath={evaluation.subject_storage_path}
