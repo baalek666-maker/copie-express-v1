@@ -26,7 +26,9 @@ export default function LoginForm() {
       const supabase = createBrowserSupabase();
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) {
-        router.push('/app');
+        // Si un plan est sélectionné (depuis /pricing), redirige vers /app/billing?plan=X
+        const target = plan ? `/app/billing?plan=${plan}` : '/app';
+        router.push(target);
         router.refresh();
       } else {
         setError('Lien invalide ou expiré. Demande un nouveau lien.');
@@ -37,6 +39,7 @@ export default function LoginForm() {
   }, [searchParams, router]);
 
   const isNew = searchParams.get('new') === '1';
+  const plan = searchParams.get('plan');
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
