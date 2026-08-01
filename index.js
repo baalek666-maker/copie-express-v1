@@ -16,7 +16,24 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-app.use(cors({ origin: [process.env.NEXT_PUBLIC_APP_URL, 'http://localhost:3000'] }));
+// CORS permissif pour le développement (Vercel + localhost)
+const allowedOrigins = [
+  'https://copie-express-v1.vercel.app',
+  'http://localhost:3000',
+  process.env.NEXT_PUBLIC_APP_URL,
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, true); // Permissif en dev : on accepte tout
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Désactive le streaming pour multer : on lit tout en buffer d'abord
