@@ -81,6 +81,7 @@ export default async function Image() {
             textAlign: 'center',
             maxWidth: '900px',
             lineHeight: 1.3,
+            marginBottom: '100px',
           }}
         >
           Brevet blanc, bac blanc, contrôles — 90 copies en 30 secondes.
