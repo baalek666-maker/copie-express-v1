@@ -121,6 +121,7 @@ app.post('/api/subject', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'no_file', hint: 'multer did not parse the file' });
 
     // Vérifier que l'éval appartient au user
+    console.log('[SUBJECT] Checking evaluation:', evaluationId, 'for user:', userId);
     const { data: evalData, error: evalError } = await supabase
       .from('evaluations')
       .select('id, user_id')
@@ -128,17 +129,20 @@ app.post('/api/subject', upload.single('file'), async (req, res) => {
       .eq('user_id', userId)
       .single();
 
-    if (evalError || !evalData) return res.status(404).json({ error: 'evaluation_not_found' });
+    console.log('[SUBJECT] evalData:', evalData, 'evalError:', evalError);
+    if (evalError || !evalData) return res.status(404).json({ error: 'evaluation_not_found', evalError: evalError?.message });
 
     // Upload le sujet dans le bucket copies
     const filename = `${userId}/${evaluationId}/subject_${Date.now()}_${req.file.originalname}`;
+    console.log('[SUBJECT] uploading to storage:', filename);
     const { data, error } = await supabase.storage
       .from('copies')
       .upload(filename, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
 
+    console.log('[SUBJECT] storage result:', { data, error });
     if (error) {
       console.error('subject upload error:', error);
-      return res.status(500).json({ error: 'upload_failed' });
+      return res.status(500).json({ error: 'upload_failed', details: error.message });
     }
 
     // Update l'évaluation
