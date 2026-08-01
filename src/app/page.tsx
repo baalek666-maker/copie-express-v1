@@ -615,9 +615,11 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <p>© 2026 Copie Express · Tous droits réservés</p>
-          <nav className="flex gap-4 flex-wrap justify-center">
+        <div className="max-w-6xl mx-auto flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-muted-foreground">
+            © 2026 Copie Express. Fait avec ❤️ par et pour des profs.
+          </p>
+          <nav className="flex gap-4 flex-wrap justify-center text-sm text-muted-foreground">
             <Link href="/why-us" className="hover:text-foreground">Pourquoi nous</Link>
             <Link href="/pricing" className="hover:text-foreground">Tarifs</Link>
             <Link href="/contact" className="hover:text-foreground">Contact</Link>
