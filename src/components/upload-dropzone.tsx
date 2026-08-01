@@ -103,6 +103,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       }
 
       // Lance l'extraction en arrière-plan (une par une ou par batch)
+      // On attend chaque extract pour que router.refresh() ait les données à jour
       if (result.paths.length > 0) {
         const { data: firstCopies } = await supabase
           .from('copies')
@@ -112,21 +113,29 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
           .limit(result.paths.length);
 
         for (const copy of firstCopies || []) {
-          fetch(`${backendUrl}/api/extract`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ evaluationId, copyId: copy.id, userId: user.id }),
-          }).catch(console.error);
+          try {
+            const extractRes = await fetch(`${backendUrl}/api/extract`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ evaluationId, copyId: copy.id, userId: user.id }),
+            });
+            if (!extractRes.ok) {
+              console.error('[extract] failed for copy', copy.id, await extractRes.text());
+            }
+          } catch (err) {
+            console.error('[extract] error for copy', copy.id, err);
+          }
         }
       }
 
       setProgress(100);
       setFiles([]);
+      // Petit délai pour que la DB soit bien à jour avant le refresh
       setTimeout(() => {
         router.refresh();
         setUploading(false);
         setProgress(0);
-      }, 1000);
+      }, 500);
     } catch (err: any) {
       setError(err.message);
       setUploading(false);
