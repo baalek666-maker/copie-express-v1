@@ -37,7 +37,7 @@ async function mistralChat(messages, jsonMode = true) {
 }
 
 async function mistralOcr(documentUrl) {
-  const response = await fetch(`${MISTRAL_API_URL}/ocr/process`, {
+  const response = await fetch(`${MISTRAL_API_URL}/ocr`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ async function mistralOcr(documentUrl) {
     },
     body: JSON.stringify({
       model: 'mistral-ocr-latest',
-      document: { type: 'document_url', documentUrl: documentUrl },
+      document: { type: 'document_url', document_url: documentUrl },
       include_image_base64: false,
     }),
   });
