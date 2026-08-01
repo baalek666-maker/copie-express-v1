@@ -74,7 +74,7 @@ export function SubjectUploader({
         <input
           id="subject-replace-input"
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/*,application/pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -112,14 +112,14 @@ export function SubjectUploader({
               <Camera className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-sm font-medium mb-1">📸 Prends en photo le sujet du contrôle</p>
               <p className="text-xs text-muted-foreground">
-                Photo, scan, ou PDF multi-pages
+                Photo, scan, PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx)
               </p>
             </>
           )}
           <input
             id="subject-input"
             type="file"
-            accept="image/*,application/pdf"
+            accept="image/*,application/pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt"
             className="hidden"
             disabled={uploading}
             onChange={(e) => {

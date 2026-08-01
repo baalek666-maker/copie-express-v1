@@ -148,12 +148,12 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
           Glisse tes photos/PDF ici, ou clique pour parcourir
         </p>
         <p className="text-xs text-muted-foreground mb-3">
-          Photos de pile, photos individuelles, ou PDF multi-pages · Max 100 fichiers · 50MB/fichier
+          Photo, scan, PDF, Word, Excel, PowerPoint · Max 100 fichiers · 50MB/fichier
         </p>
         <input
           type="file"
           multiple
-          accept="image/*,application/pdf"
+          accept="image/*,application/pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt"
           onChange={onFileInput}
           className="hidden"
           id="file-input"

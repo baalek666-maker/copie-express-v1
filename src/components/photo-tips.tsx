@@ -94,7 +94,7 @@ export function PhotoTips() {
             {/* Accepted formats */}
             <div className="text-xs text-muted-foreground flex items-center gap-2 pt-2 border-t">
               <CheckCircle2 className="h-3 w-3 text-green-600" />
-              Formats acceptés : JPG, PNG, WebP, PDF multi-pages · Max 50 MB par fichier
+              Formats acceptés : JPG, PNG, WebP, PDF, Word, Excel, PowerPoint · Max 50 MB par fichier
             </div>
           </div>
         )}
