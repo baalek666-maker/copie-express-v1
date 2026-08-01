@@ -6,9 +6,56 @@ import cors from 'cors';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-import { Mistral } from '@mistralai/mistralai';
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Mistral API via fetch direct (évite les problèmes de version du SDK)
+const MISTRAL_API_URL = 'https://api.mistral.ai/v1';
+async function mistralChat(messages, jsonMode = true) {
+  const response = await fetch(`${MISTRAL_API_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'mistral-small-latest',
+      messages,
+      ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+      temperature: 0,
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Mistral chat ${response.status}: ${err}`);
+  }
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  return jsonMode ? JSON.parse(content) : content;
+}
+
+async function mistralOcr(documentUrl) {
+  const response = await fetch(`${MISTRAL_API_URL}/ocr/process`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'mistral-ocr-latest',
+      document: { type: 'document_url', documentUrl: documentUrl },
+      include_image_base64: false,
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Mistral OCR ${response.status}: ${err}`);
+  }
+  const data = await response.json();
+  return data.pages?.map(p => p.markdown || '').join('\n\n') || '';
+}
 
 dotenv.config();
 
@@ -106,13 +153,7 @@ app.post('/api/grading-key', upload.single('file'), async (req, res) => {
       return res.status(500).json({ error: 'signed_url_failed' });
     }
 
-    const ocrResponse = await mistral.ocr.process({
-      model: 'mistral-ocr-latest',
-      document: { type: 'document_url', documentUrl: signedUrl.signedUrl },
-      includeImageBase64: false,
-    });
-
-    const rawText = ocrResponse.pages?.map(p => p.markdown || '').join('\n\n') || '';
+    const rawText = await mistralOcr(signedUrl.signedUrl);
 
     // Nettoyage du texte OCR pour avoir un barème lisible
     const cleanedText = rawText
@@ -265,12 +306,7 @@ app.post('/api/extract', async (req, res) => {
     if (!signedUrl?.signedUrl) return res.status(500).json({ error: 'signed_url_failed' });
 
     // Step 1 : OCR de la copie
-    const ocrResponse = await mistral.ocr.process({
-      model: 'mistral-ocr-latest',
-      document: { type: 'document_url', documentUrl: signedUrl.signedUrl },
-      includeImageBase64: false,
-    });
-    const ocrText = ocrResponse.pages?.map(p => p.markdown || '').join('\n\n') || '';
+    const ocrText = await mistralOcr(signedUrl.signedUrl);
 
     // Step 2 : Extraction structurée (avec sujet optionnel)
     const evalData = copy.evaluations;
@@ -283,12 +319,7 @@ app.post('/api/extract', async (req, res) => {
         .createSignedUrl(evalData.subject_storage_path, 60);
 
       if (subjectSignedUrl?.signedUrl) {
-        const subjectOcr = await mistral.ocr.process({
-          model: 'mistral-ocr-latest',
-          document: { type: 'document_url', documentUrl: subjectSignedUrl.signedUrl },
-          includeImageBase64: false,
-        });
-        const subjectText = subjectOcr.pages?.map(p => p.markdown || '').join('\n\n') || '';
+        const subjectText = await mistralOcr(subjectSignedUrl.signedUrl);
         promptContext = `\nSUJET DU CONTRÔLE (contexte) :\n"""\n${subjectText}\n"""\n`;
       }
     }
@@ -358,23 +389,16 @@ JSON STRICT :
 }`;
     }
 
-    const extraction = await mistral.chat.complete({
-      model: 'mistral-small-latest',
-      messages: [
-        {
-          role: 'system',
-          content: 'Tu es un assistant qui extrait et compare des réponses d\'élèves. Tu retournes UNIQUEMENT du JSON valide, aucun commentaire.',
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-      responseFormat: { type: 'json_object' },
-      temperature: 0,
-    });
-
-    const parsed = JSON.parse(extraction.choices[0].message.content);
+    const parsed = await mistralChat([
+      {
+        role: 'system',
+        content: 'Tu es un assistant qui extrait et compare des réponses d\'élèves. Tu retournes UNIQUEMENT du JSON valide, aucun commentaire.',
+      },
+      {
+        role: 'user',
+        content: userPrompt,
+      },
+    ], true);
 
     // Calcul du score total
     let totalScore = null;
