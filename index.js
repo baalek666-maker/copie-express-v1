@@ -486,9 +486,13 @@ JSON STRICT (rien d'autre) :
 
 // === EXPORT CSV (SACoche / Pronote) ===
 app.post('/api/export', async (req, res) => {
+  const DEBUG = process.env.NODE_ENV !== 'production';
   try {
-    const { evaluationId, format } = req.body; // format: 'sacoche' | 'pronote' | 'xlsx'
+    const { evaluationId, format } = req.body; // format: 'sacoche' | 'pronote'
     if (!evaluationId || !format) return res.status(400).json({ error: 'missing_params' });
+    if (!['sacoche', 'pronote'].includes(format)) {
+      return res.status(400).json({ error: 'invalid_format' });
+    }
 
     const { data: copies, error } = await supabase
       .from('copies')
@@ -499,41 +503,55 @@ app.post('/api/export', async (req, res) => {
     if (error) throw error;
     if (!copies?.length) return res.status(404).json({ error: 'no_validated_copies' });
 
-    // Calcul du score pour chaque copie
+    // Récupération évaluation + barème
     const { data: evaluation } = await supabase
       .from('evaluations')
-      .select('grading_scale, correct_answers')
+      .select('grading_scale, correct_answers, title')
       .eq('id', evaluationId)
       .single();
 
-    const scale = evaluation.grading_scale;
+    if (!evaluation) return res.status(404).json({ error: 'evaluation_not_found' });
+
+    const scale = evaluation.grading_scale || [];
+    const correctAnswers = evaluation.correct_answers || {};
     let csv = '';
 
     if (format === 'sacoche') {
-      const headers = ['eleve', ...scale.map(q => q.id), 'note'];
+      // Format SACoche CSV : eleve;Q1;Q2;Q3;note
+      const headers = ['eleve', ...scale.map((q) => q.id || q.question_id), 'note'];
       csv = headers.join(';') + '\n';
       for (const copy of copies) {
         const row = [copy.student_identifier || 'eleve_XX'];
         let total = 0;
         for (const q of scale) {
-          const ans = copy.extracted_answers?.[q.id];
-          const correct = evaluation.correct_answers?.[q.id];
-          const pts = ans && correct && ans.toLowerCase() === correct.toLowerCase() ? q.max_points : 0;
-          row.push(`"${ans || ''}"`);
+          const qId = q.id || q.question_id;
+          const ans = copy.extracted_answers?.[qId] ?? '';
+          const correct = correctAnswers[qId];
+          let pts = 0;
+          if (qId === 'global' || qId === 'note_globale' || qId === 'score') {
+            // Notation globale (mode sans barème) : utilise le score stocké
+            pts = Number(copy.score) || 0;
+          } else if (correct && ans && String(ans).toLowerCase().trim() === String(correct).toLowerCase().trim()) {
+            pts = q.max_points || 0;
+          }
+          row.push(`"${ans}"`);
           total += pts;
         }
         row.push(total.toFixed(2));
         csv += row.join(';') + '\n';
       }
     } else if (format === 'pronote') {
+      // Format Pronote CSV : Nom;Note;Appreciation
       csv = 'Nom;Note;Appreciation\n';
       for (const copy of copies) {
-        const total = computeScore(copy.extracted_answers, scale, evaluation.correct_answers);
-        csv += `${copy.student_identifier || 'eleve_XX'};${total.toFixed(2)};${getAppreciation(total / scale.reduce((s, q) => s + q.max_points, 0))}\n`;
+        const total = computeScore(copy.extracted_answers, scale, correctAnswers);
+        const totalMax = scale.reduce((s, q) => s + (q.max_points || 0), 0);
+        const ratio = totalMax > 0 ? total / totalMax : 0;
+        csv += `${copy.student_identifier || 'eleve_XX'};${total.toFixed(2)};${getAppreciation(ratio)}\n`;
       }
     }
 
-    // Upload le CSV
+    // Upload le CSV dans storage
     const filename = `${evaluationId}/${Date.now()}_${format}.csv`;
     await supabase.storage.from('exports').upload(filename, csv, { contentType: 'text/csv' });
 
@@ -545,9 +563,9 @@ app.post('/api/export', async (req, res) => {
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     });
 
-    res.json({ success: true, filename, preview: csv.split('\n').slice(0, 3).join('\n') });
+    res.json({ success: true, filename, preview: csv.split('\n').slice(0, 3).join('\n'), row_count: copies.length });
   } catch (err) {
-    console.error('export error:', err);
+    if (DEBUG) console.error('export error:', err);
     res.status(500).json({ error: 'export_failed' });
   }
 });

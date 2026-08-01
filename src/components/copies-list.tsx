@@ -212,14 +212,7 @@ function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
             <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
           </div>
 
-          {copy.ocr_text && (
-            <details className="rounded-md bg-secondary/30 p-3 text-xs">
-              <summary className="cursor-pointer font-medium">Voir le texte extrait</summary>
-              <pre className="mt-2 whitespace-pre-wrap font-mono text-xs">{copy.ocr_text}</pre>
-            </details>
-          )}
-
-          {/* Photo originale + texte extrait côte à côte */}
+          {/* Photo originale + résultats d'analyse côte à côte */}
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Colonne gauche : photo originale */}
             <div className="space-y-2">
@@ -229,10 +222,10 @@ function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
               <PhotoViewer storagePath={copy.photo_storage_path} />
             </div>
 
-            {/* Colonne droite : texte extrait + analyse */}
+            {/* Colonne droite : analyse */}
             <div className="space-y-3">
               <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                🔍 Analyse automatique
+                🔍 Analyse
               </div>
 
               {/* Affichage par question/réponse selon ce que Mistral a retourné */}
