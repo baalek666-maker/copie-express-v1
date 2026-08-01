@@ -7,7 +7,7 @@ export default function WhyUsPage() {
   const comparison = [
     { feature: 'Extraction automatique', us: true, sacoche: false, pronote: false },
     { feature: 'Photo depuis le téléphone', us: true, sacoche: false, pronote: false },
-    { feature: 'OCR manuscrit fiable', us: true, sacoche: false, pronote: false },
+    { feature: 'Reconnaissance d\'écriture fiable', us: true, sacoche: false, pronote: false },
     { feature: 'Notation auto vs barème', us: true, sacoche: false, pronote: false },
     { feature: 'Export SACoche', us: true, sacoche: true, pronote: false },
     { feature: 'Export Pronote', us: true, sacoche: false, pronote: true },

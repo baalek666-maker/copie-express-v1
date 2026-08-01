@@ -1,7 +1,8 @@
-import SignupForm from './signup-form';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-
+// /signup → redirect vers /login
+// L'auth Supabase magic link crée automatiquement un compte si l'email n'existe pas
+// Pas besoin de page séparée
 export default function SignupPage() {
-  return <SignupForm />;
+  redirect('/login?new=1');
 }

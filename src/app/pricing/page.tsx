@@ -50,7 +50,7 @@ export default function PricingPage() {
       ],
       cta: 'Choisir annuel',
       ctaLink: '/login?plan=yearly',
-      variant: 'default' as const,
+      variant: 'outline' as const,
       highlight: false,
     },
     {

@@ -36,6 +36,8 @@ export default function LoginForm() {
     handleCallback();
   }, [searchParams, router]);
 
+  const isNew = searchParams.get('new') === '1';
+
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -62,8 +64,12 @@ export default function LoginForm() {
     <main className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>Connexion</CardTitle>
-          <CardDescription>On t'envoie un lien magique par email. Pas de mot de passe à retenir.</CardDescription>
+          <CardTitle>{isNew ? 'Créer mon compte' : 'Connexion'}</CardTitle>
+          <CardDescription>
+            {isNew
+              ? '10 copies gratuites, sans carte bancaire. On t\'envoie un lien magique par email.'
+              : 'On t\'envoie un lien magique par email. Pas de mot de passe à retenir.'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {sent ? (
@@ -102,14 +108,25 @@ export default function LoginForm() {
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Envoi en cours...' : 'Recevoir mon lien magique →'}
+                {loading ? 'Envoi en cours...' : isNew ? 'Créer mon compte →' : 'Recevoir mon lien magique →'}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
-                Pas encore de compte ?{' '}
-                <Link href="/signup" className="text-primary hover:underline font-medium">
-                  Créer un compte (10 copies gratuites)
-                </Link>
+                {isNew ? (
+                  <>
+                    Déjà un compte ?{' '}
+                    <Link href="/login" className="text-primary hover:underline font-medium">
+                      Se connecter
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    Pas encore de compte ?{' '}
+                    <Link href="/signup" className="text-primary hover:underline font-medium">
+                      Créer un compte (10 copies gratuites)
+                    </Link>
+                  </>
+                )}
               </p>
             </form>
           )}
