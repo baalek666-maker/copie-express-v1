@@ -529,7 +529,6 @@ app.post('/api/export', async (req, res) => {
           const correct = correctAnswers[qId];
           let pts = 0;
           if (qId === 'global' || qId === 'note_globale' || qId === 'score') {
-            // Notation globale (mode sans barème) : utilise le score stocké
             pts = Number(copy.score) || 0;
           } else if (correct && ans && String(ans).toLowerCase().trim() === String(correct).toLowerCase().trim()) {
             pts = q.max_points || 0;
@@ -547,26 +546,19 @@ app.post('/api/export', async (req, res) => {
         const total = computeScore(copy.extracted_answers, scale, correctAnswers);
         const totalMax = scale.reduce((s, q) => s + (q.max_points || 0), 0);
         const ratio = totalMax > 0 ? total / totalMax : 0;
-        csv += `${copy.student_identifier || 'eleve_XX'};${total.toFixed(2)};${getAppreciation(ratio)}\n`;
+        // Sans barème : utilise copy.score directement
+        const finalScore = scale.length === 0 ? (Number(copy.score) || 0) : total;
+        csv += `${copy.student_identifier || 'eleve_XX'};${finalScore.toFixed(2)};${getAppreciation(ratio)}\n`;
       }
     }
 
-    // Upload le CSV dans storage
-    const filename = `${evaluationId}/${Date.now()}_${format}.csv`;
-    await supabase.storage.from('exports').upload(filename, csv, { contentType: 'text/csv' });
-
-    // Trace l'export
-    await supabase.from('exports').insert({
-      evaluation_id: evaluationId,
-      format,
-      file_storage_path: filename,
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
-
-    res.json({ success: true, filename, preview: csv.split('\n').slice(0, 3).join('\n'), row_count: copies.length });
+    // Retourne le CSV directement — pas de storage intermédiaire
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${format}_${evaluationId}.csv"`);
+    res.status(200).send(csv);
   } catch (err) {
     if (DEBUG) console.error('export error:', err);
-    res.status(500).json({ error: 'export_failed' });
+    res.status(500).json({ error: 'export_failed', detail: String(err) });
   }
 });
 
