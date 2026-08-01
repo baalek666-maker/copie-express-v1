@@ -19,6 +19,17 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 app.use(cors({ origin: [process.env.NEXT_PUBLIC_APP_URL, 'http://localhost:3000'] }));
 app.use(express.json({ limit: '10mb' }));
 
+// Désactive le streaming pour multer : on lit tout en buffer d'abord
+// (évite ERR_FAILED lié à HTTP/2 RST_STREAM entre Vercel et Railway)
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.headers['content-type']?.includes('multipart/form-data')) {
+    // Le body est déjà bufferisé par multer.single() / multer.array()
+    // On force Connection: close pour éviter le HTTP/2 streaming
+    res.setHeader('Connection', 'close');
+  }
+  next();
+});
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -502,4 +513,10 @@ app.post('/api/cron/cleanup', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`Copie Express backend running on 0.0.0.0:${PORT}`));// Trigger Railway redeploy
+app.listen(PORT, '0.0.0.0', () => console.log(`Copie Express backend running on 0.0.0.0:${PORT}`));
+
+// Force la fermeture des connexions après chaque requête (évite ERR_FAILED HTTP/2)
+app.use((req, res, next) => {
+  res.setHeader('Connection', 'close');
+  next();
+});// Trigger Railway redeploy
