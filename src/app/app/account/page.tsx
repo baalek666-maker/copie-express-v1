@@ -1,11 +1,12 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-export const dynamic = 'force-dynamic';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FadeIn } from '@/components/fade-in';
+import { Mail, User, School, BookOpen, Sparkles, ArrowRight, Shield } from 'lucide-react';
 import Link from 'next/link';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AccountPage() {
   const supabase = createServerSupabase();
@@ -21,71 +22,133 @@ export default async function AccountPage() {
   const subscriptionActive = userData?.subscription_status === 'active';
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Mon compte</h1>
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+      <FadeIn>
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Mon compte</h1>
+          <p className="text-muted-foreground mt-1">
+            Tes infos et ton abonnement.
+          </p>
+        </div>
+      </FadeIn>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profil</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div><span className="text-muted-foreground">Nom :</span> {userData?.full_name || '—'}</div>
-          <div><span className="text-muted-foreground">Email :</span> {user.email}</div>
-          <div><span className="text-muted-foreground">Académie :</span> {userData?.academy || '—'}</div>
-          <div><span className="text-muted-foreground">Matière :</span> {userData?.subject?.join(', ') || '—'}</div>
-          <div><span className="text-muted-foreground">Niveaux :</span> {userData?.school_level?.join(', ') || '—'}</div>
-        </CardContent>
-      </Card>
+      <FadeIn delay={100}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              Profil
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <User className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Nom</p>
+                <p className="font-medium">{userData?.full_name || '—'}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="font-medium">{user.email}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <School className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Académie</p>
+                <p className="font-medium">{userData?.academy || '—'}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <BookOpen className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Matière(s) · Niveau(x)</p>
+                <p className="font-medium">
+                  {userData?.subject?.join(', ') || '—'} · {userData?.school_level?.join(', ') || '—'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </FadeIn>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Abonnement</CardTitle>
-          <CardDescription>
-            {subscriptionActive ? 'Tu profites de l\'accès illimité.' : 'Tu utilises le forfait Découverte.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {subscriptionActive ? (
-            <>
-              <Badge variant="success">✓ Abonnement actif</Badge>
-              <p className="text-sm">
-                Forfait : <strong>{userData?.subscription_plan}</strong> ·{' '}
-                Renouvellement : {new Date(userData?.subscription_expires_at).toLocaleDateString('fr-FR')}
-              </p>
-              <Button variant="outline" asChild>
-                <Link href="/app/billing">Gérer mon abonnement</Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm">
-                Copies utilisées : <strong>{userData?.trial_copies_count || 0} / 10</strong>
-              </p>
-              <Button asChild>
-                <Link href="/pricing">Passer à un forfait</Link>
-              </Button>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <FadeIn delay={200}>
+        <Card className={subscriptionActive ? 'border-green-300 dark:border-green-800' : ''}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Abonnement
+            </CardTitle>
+            <CardDescription>
+              {subscriptionActive ? 'Tu profites de l\'accès illimité.' : 'Tu utilises le forfait Découverte.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {subscriptionActive ? (
+              <>
+                <Badge variant="success" className="flex items-center gap-1 w-fit">
+                  ✓ Abonnement actif
+                </Badge>
+                <p className="text-sm">
+                  Forfait : <strong>{userData?.subscription_plan}</strong> ·{' '}
+                  Renouvellement : {userData?.subscription_expires_at
+                    ? new Date(userData.subscription_expires_at).toLocaleDateString('fr-FR')
+                    : '—'}
+                </p>
+                <Button variant="outline" asChild>
+                  <Link href="/pricing">Voir les forfaits</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">Découverte</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {userData?.trial_copies_count || 0} / 10 copies utilisées
+                  </span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-orange-500 transition-all"
+                    style={{ width: `${((userData?.trial_copies_count || 0) / 10) * 100}%` }}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Passe à un forfait pour continuer sans limite.
+                </p>
+                <Button asChild className="shadow-lg shadow-primary/20">
+                  <Link href="/pricing">
+                    Voir les forfaits
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </FadeIn>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Données personnelles (RGPD)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <p>Conformément au RGPD, tu peux à tout moment :</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Exporter toutes tes données</li>
-            <li>Supprimer ton compte et toutes les données associées</li>
-            <li>Demander la rectification de données inexactes</li>
-          </ul>
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="sm">Exporter mes données</Button>
-            <Button variant="destructive" size="sm">Supprimer mon compte</Button>
-          </div>
-        </CardContent>
-      </Card>
+      <FadeIn delay={300}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              Confidentialité
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              Tes copies sont hébergées en Europe (Supabase Ireland), supprimées automatiquement après 30 jours.
+            </p>
+            <p>
+              Voir nos <Link href="/legal/privacy" className="text-primary hover:underline">engagements RGPD</Link>.
+            </p>
+          </CardContent>
+        </Card>
+      </FadeIn>
     </div>
   );
 }
