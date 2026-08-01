@@ -13,6 +13,7 @@ import { CopiesList } from '@/components/copies-list';
 import { SubjectUploader } from '@/components/subject-uploader';
 import { GradingKeyEditor } from '@/components/grading-key-editor';
 import { PhotoTips } from '@/components/photo-tips';
+import { FadeIn } from '@/components/fade-in';
 
 export default async function EvaluationDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabase();
@@ -37,44 +38,48 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
   const validatedCount = copies?.filter((c) => c.validated_by_user).length || 0;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      <div>
-        <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
-          <ArrowLeft className="h-3 w-3" /> Mes évaluations
-        </Link>
-      </div>
-
-      <div className="flex items-start justify-between">
+    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+      <FadeIn>
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-bold">{evaluation.title}</h1>
-            <Badge variant={evaluation.status === 'completed' ? 'success' : 'secondary'}>
-              {evaluation.status === 'completed' ? 'Terminée' : evaluation.status === 'draft' ? 'Brouillon' : 'En cours'}
-            </Badge>
+          <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Mes évaluations
+          </Link>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={50}>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{evaluation.title}</h1>
+              <Badge variant={evaluation.status === 'completed' ? 'success' : 'secondary'}>
+                {evaluation.status === 'completed' ? 'Terminée' : evaluation.status === 'draft' ? 'Brouillon' : 'En cours'}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground">
+              {evaluation.subject} · {evaluation.class_level} · {evaluation.total_copies} copies prévues
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            {evaluation.subject} · {evaluation.class_level} · {evaluation.total_copies} copies prévues
-          </p>
+          <div className="flex gap-2">
+            {validatedCount > 0 && (
+              <>
+                <Button variant="outline" asChild>
+                  <a href={`/api/export?evaluationId=${params.id}&format=sacoche`}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export SACoche
+                  </a>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href={`/api/export?evaluationId=${params.id}&format=pronote`}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Pronote
+                  </a>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {validatedCount > 0 && (
-            <>
-              <Button variant="outline" asChild>
-                <a href={`/api/export?evaluationId=${params.id}&format=sacoche`}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export SACoche
-                </a>
-              </Button>
-              <Button variant="outline" asChild>
-                <a href={`/api/export?evaluationId=${params.id}&format=pronote`}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Pronote
-                </a>
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+      </FadeIn>
 
       <div className="grid md:grid-cols-3 gap-4">
         <Card>

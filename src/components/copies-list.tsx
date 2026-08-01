@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { Celebration } from '@/components/celebration';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Edit3, Loader2, FileText } from 'lucide-react';
 import { PhotoViewer } from './photo-viewer';
 import { ConfidenceBadge } from './confidence-badge';
+import { toast } from 'sonner';
 
 interface Copy {
   id: string;
@@ -39,6 +41,7 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
   gradingScale: Question[];
 }) {
   const [editingCopy, setEditingCopy] = useState<Copy | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const router = useRouter();
   const supabase = createBrowserSupabase();
 
@@ -50,6 +53,18 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
       status: 'validated',
       validated_at: new Date().toISOString(),
     }).eq('id', copy.id);
+
+    // Confetti si c'est la dernière copie à valider
+    const remaining = copies.filter((c) => !c.validated_by_user && c.id !== copy.id).length;
+    if (remaining === 0 && copies.length > 1) {
+      toast.success('🎉 Toutes les copies sont validées !', {
+        description: 'Tu peux exporter les notes vers SACoche/Pronote.',
+      });
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 2000);
+    } else {
+      toast.success('Copie validée ✓');
+    }
     router.refresh();
   };
 
@@ -65,13 +80,18 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
 
   return (
     <div className="space-y-3">
-      {copies.map((copy) => {
+      {showConfetti && <Celebration />}
+      {copies.map((copy, idx) => {
         const isValidated = copy.validated_by_user;
         const isReady = copy.status === 'ready_to_validate';
         const isPending = copy.status === 'pending' || copy.status === 'processing';
 
         return (
-          <Card key={copy.id} className={isValidated ? 'border-green-300 bg-green-50/50' : ''}>
+          <Card
+            key={copy.id}
+            className={`transition-all hover:shadow-md animate-fade-in ${isValidated ? 'border-green-300 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800' : ''}`}
+            style={{ animationDelay: `${idx * 40}ms` }}
+          >
             <CardContent className="p-5">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
