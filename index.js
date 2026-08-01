@@ -214,9 +214,13 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
 
 // === EXTRACT (Mistral OCR + LLM) ===
 app.post('/api/extract', async (req, res) => {
+  const { evaluationId, copyId, userId } = req.body;
+  if (!evaluationId || !copyId || !userId) {
+    return res.status(400).json({ error: 'missing_params' });
+  }
+
   try {
-    const { evaluationId, copyId, userId } = req.body;
-    if (!evaluationId || !copyId || !userId) return res.status(400).json({ error: 'missing_params' });
+    console.log('[EXTRACT] start for copyId:', copyId);
 
     // === ANTI-ABUSE BACKEND CHECK ===
     const { data: user, error: userError } = await supabase
@@ -395,9 +399,9 @@ JSON STRICT :
   } catch (err) {
     console.error('=== EXTRACT ERROR ===');
     console.error('copyId:', copyId);
-    console.error('error:', err);
+    console.error('error:', err && err.message ? err.message : String(err));
     console.error('======================');
-    res.status(500).json({ error: 'extract_failed', details: err.message });
+    res.status(500).json({ error: 'extract_failed', details: err && err.message ? err.message : 'unknown error' });
   }
 });
 
