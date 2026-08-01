@@ -10,412 +10,445 @@ import {
   MobileMockup,
 } from '@/components/product-mockups';
 import {
-  FileText,
-  MousePointerClick,
-  Heart,
-  Sparkles,
   Check,
   Zap,
-  Smartphone,
-  Clock,
-  CheckCircle2,
   Camera,
-  Search,
-  Calculator,
-  Download,
+  Shield,
+  FileText,
+  Heart,
+  ArrowRight,
+  Star,
+  HelpCircle,
+  ChevronDown,
   Moon,
   Sun,
   Users,
   GraduationCap,
-  Coffee,
-  ChevronDown,
 } from 'lucide-react';
 
-export default function Home() {
+const features = [
+  {
+    icon: Zap,
+    title: '10× plus rapide',
+    desc: '90 copies en 30 secondes au lieu de 3h de clics répétitifs.',
+  },
+  {
+    icon: Camera,
+    title: 'Photo depuis ton canapé',
+    desc: 'Pas de scanner. Ton téléphone suffit, depuis ton salon à 23h.',
+  },
+  {
+    icon: Shield,
+    title: 'RGPD by design',
+    desc: 'Données hébergées en Europe, suppression auto 30j, jamais partagées.',
+  },
+  {
+    icon: FileText,
+    title: 'Compatible SACoche & Pronote',
+    desc: 'CSV au bon format. Tu importes en 2 clics.',
+  },
+  {
+    icon: Heart,
+    title: 'Conçu pour les profs',
+    desc: 'Par un prof, pour des profs. Pas de fonctionnalités inutiles.',
+  },
+  {
+    icon: Check,
+    title: 'Tu gardes le contrôle',
+    desc: 'Le système propose, tu valides ou corriges en 1 clic.',
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Mon brevet blanc de mars, 92 copies. J'ai cliqué 'valider' en 30 secondes. J'ai pleuré de soulagement dans ma voiture.",
+    author: 'Marc, 42 ans',
+    role: 'Prof de maths',
+    city: 'Lyon',
+    avatar: 'M',
+    color: 'from-blue-500 to-blue-600',
+  },
+  {
+    quote: "Je pensais que c'était encore un gadget. Au premier brevet blanc, j'ai gagné 12h. Maintenant je l'utilise pour chaque contrôle de maths.",
+    author: 'Sylvie, 39 ans',
+    role: 'Prof de physique',
+    city: 'Bordeaux',
+    avatar: 'S',
+    color: 'from-pink-500 to-rose-600',
+  },
+  {
+    quote: "Mon mari m'a dit : 'Tu es redevenue normale.' Ça valait 99€/an x 100.",
+    author: 'Céline, 36 ans',
+    role: 'Prof de SVT',
+    city: 'Nantes',
+    avatar: 'C',
+    color: 'from-green-500 to-emerald-600',
+  },
+];
+
+const faqs = [
+  {
+    q: 'Est-ce vraiment sans IA ?',
+    a: 'Le système fait de la reconnaissance d\'écriture pour extraire les réponses de tes copies. Tu gardes 100% du contrôle : tu valides ou corriges chaque note avant export. Aucune décision pédagogique n\'est automatisée.',
+  },
+  {
+    q: 'Mes copies sont en sécurité ?',
+    a: 'Hébergement Supabase Ireland (Europe). Suppression automatique après 30 jours. Jamais utilisées pour entraîner des modèles. Tu peux supprimer ton compte et toutes tes données à tout moment.',
+  },
+  {
+    q: "Ça marche pour mes matières ?",
+    a: 'Maths, français, histoire-géo, SVT, physique, langues, philo, techno... Le barème est ton barème : tu le définis, le système l\'applique. Pour les matières très subjectives (dissertation), tu valides chaque copie.',
+  },
+  {
+    q: "Et si l'élève utilise une autre méthode de résolution ?",
+    a: "En maths/physique, un même problème peut avoir 3-4 méthodes valides (discriminant, factorisation, racines, graphique...). Le système détecte automatiquement la méthode utilisée par chaque élève. Tu valides si elle est correcte en 1 clic.",
+  },
+  {
+    q: 'Combien de temps ça prend vraiment ?',
+    a: "Pour un brevet blanc de 90 copies : 2 minutes de scan + 30 secondes de validation + 30 secondes d'export = 3 minutes chrono. Le reste, on le fait pour toi pendant que tu bois ton café.",
+  },
+  {
+    q: "Et si je me trompe ? Et si l'outil se trompe ?",
+    a: 'Testé sur 1 000 copies réelles : 99,2 % de fiabilité. Et de toute façon, tu valides en 30 secondes avant de télécharger. Zéro risque.',
+  },
+  {
+    q: 'Ça marche avec Pronote / SACoche ? Et les autres outils ?',
+    a: 'Oui : le fichier exporté est directement compatible SACoche (collège) et Pronote (lycée). Format CSV propre, prêt à importer. Pour les autres outils (Excel, tableurs perso), c\'est aussi supporté.',
+  },
+  {
+    q: "Est-ce que je peux l'utiliser pour le brevet ou le bac officiel ?",
+    a: "Non, pas pour les épreuves officielles. Les copies du brevet des collèges et du bac général doivent être corrigées selon les modalités prévues par le Ministère de l'Éducation nationale. C'est la loi, on la respecte. En revanche, tu peux l'utiliser librement pour tout le reste : brevet blanc, bac blanc, contrôles au fil de l'année.",
+  },
+  {
+    q: 'Mes collègues vont me juger si je délègue ?',
+    a: "Compréhensible. Mais tu délègues pas la correction — tu délègues la saisie administrative. Tu valides chaque copie avant d'exporter. Tu gardes la main. Les collègues qui testent disent tous la même chose : \"J'aurais dû faire ça plus tôt\".",
+  },
+  {
+    q: 'Y a-t-il une version gratuite ?',
+    a: "Oui : 10 copies offertes à l'inscription pour tester sans risque. Aucune carte requise. Si t'es convaincu, tu passes au plan annuel à 99€.",
+  },
+  {
+    q: 'Pourquoi pas utiliser ChatGPT pour faire la même chose ?',
+    a: "1. C'est hors la loi. ChatGPT envoie les copies d'élèves sur des serveurs d'OpenAI aux États-Unis. C'est une violation du RGPD pour des données scolaires d'élèves mineurs. 2. C'est plus cher. 3. C'est plus lent. 4. C'est moins fiable — ChatGPT n'est pas entraîné sur des copies manuscrites françaises.",
+  },
+  {
+    q: 'Puis-je annuler à tout moment ?',
+    a: 'Oui, sans engagement. Annulation 1-clic depuis ton compte. Remboursement sous 14 jours si tu changes d\'avis (droit de rétractation).',
+  },
+];
+
+export default function HomePage() {
   return (
-    <>
-      {/* ===== HERO ===== */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/20 dark:via-background dark:to-background">
-        <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl">
-          <div
-            className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-orange-200 to-pink-200 opacity-30 dark:from-orange-900/30 dark:to-pink-900/30"
-            style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}
-          />
+    <main className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-30">
+        <div className="container flex h-16 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+            <img src="/favicon.svg" alt="" className="h-8 w-8" />
+            <span>Copie Express</span>
+          </Link>
+          <nav className="flex items-center gap-2">
+            <Link href="/why-us" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+              Pourquoi nous
+            </Link>
+            <Link href="/pricing" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+              Tarifs
+            </Link>
+            <Button asChild variant="ghost">
+              <Link href="/login">Connexion</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/signup">
+                Essai gratuit <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          </nav>
         </div>
+      </header>
 
-        <div className="container relative z-10 mx-auto px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
+      {/* Hero */}
+      <section className="flex-1 flex flex-col items-center justify-center px-6 py-16 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-3xl -z-10" />
+
+        <div className="max-w-6xl w-full grid lg:grid-cols-2 gap-12 items-center">
           <FadeIn>
-            <div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-sm font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
-              </span>
-              Brevet & bac blanc · Contrôles au fil de l'année · Conforme RGPD
-            </div>
-          </FadeIn>
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <Star className="h-3.5 w-3.5 fill-current" />
+                10 copies gratuites, sans carte bancaire
+              </div>
 
-          <FadeIn delay={0.1}>
-            <div className="mx-auto mb-6 max-w-2xl rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-center text-xs text-muted-foreground sm:text-sm">
-              ⚠️ Outil de saisie administrative · Conçu pour brevet blanc, bac blanc et contrôles ·{' '}
-              <strong className="text-foreground">Non destiné aux épreuves officielles</strong>
-            </div>
-          </FadeIn>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+                Redeviens un prof.
+                <br />
+                <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent italic font-serif">
+                  Pas une machine à cliquer.
+                </span>
+              </h1>
 
-          <FadeIn delay={0.2}>
-            <h1 className="mx-auto max-w-4xl text-center text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Redeviens un prof.
-              <br />
-              <em className="font-serif text-orange-600 dark:text-orange-400">
-                Pas une machine à cliquer.
-              </em>
-            </h1>
-          </FadeIn>
-
-          <FadeIn delay={0.3}>
-            <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-muted-foreground sm:text-xl">
-              Brevet blanc, bac blanc, contrôles au fil de l'année —{' '}
-              <strong className="text-foreground">90 copies en 30 secondes.</strong>
-              <br />
-              Tu valides, tu fermes l'ordi. <strong className="text-foreground">Tu retrouves ta famille, ton cœur de métier, ta vie.</strong>
-            </p>
-          </FadeIn>
-
-          <FadeIn delay={0.4}>
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <Button asChild size="lg" className="h-14 px-8 text-base shadow-lg shadow-orange-500/20">
-                <Link href="/signup">
-                  Essayer 10 copies gratuites →
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-14 px-8 text-base">
-                <Link href="#how">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Voir comment ça marche
-                </Link>
-              </Button>
-            </div>
-          </FadeIn>
-
-          <FadeIn delay={0.5}>
-            <div className="mt-10 flex flex-col items-center gap-2 text-center">
-              <div className="flex gap-0.5 text-orange-500">★★★★★</div>
-              <p className="max-w-md text-sm italic text-muted-foreground">
-                "J'ai retrouvé mes soirées. Mes enfants me reconnaissent."
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                Brevet blanc, bac blanc, contrôles au fil de l'année —{' '}
+                <strong className="text-foreground">90 copies en 30 secondes.</strong>
+                <br />
+                Tu valides, tu fermes l'ordi.{' '}
+                <strong className="text-foreground">Tu retrouves ta famille, ton cœur de métier, ta vie.</strong>
               </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button asChild size="lg" className="shadow-xl shadow-primary/30 text-base">
+                  <Link href="/signup">
+                    Commencer gratuitement
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="#how">Voir comment ça marche</Link>
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <div className="flex gap-0.5 text-orange-500">★★★★★</div>
+                <span className="text-muted-foreground italic">
+                  "J'ai retrouvé mes soirées. Mes enfants me reconnaissent."
+                </span>
+              </div>
               <p className="text-xs text-muted-foreground/70">— Marc, prof de maths en collège, Lyon</p>
             </div>
           </FadeIn>
 
-          <FadeIn delay={0.6}>
-            <div className="mt-16">
+          <FadeIn delay={200}>
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-2xl -z-10" />
               <DashboardMockup />
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ===== SOCIAL PROOF BAR ===== */}
-      <section className="border-y border-border bg-muted/30 py-12">
-        <div className="container mx-auto px-4">
+      {/* Social proof bar */}
+      <section className="border-y bg-secondary/30 py-8">
+        <div className="max-w-6xl mx-auto px-6">
           <FadeIn>
-            <p className="mb-8 text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground mb-6">
               Le service utilisé par les profs qui ont autre chose à faire que cliquer
             </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+              <div>
+                <div className="text-3xl md:text-4xl font-bold text-primary">350 000</div>
+                <div className="text-xs text-muted-foreground mt-1">profs en France qui passent 3h à saisir</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-bold text-primary">90×</div>
+                <div className="text-xs text-muted-foreground mt-1">plus rapide qu'une saisie manuelle</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-bold text-primary">99,2%</div>
+                <div className="text-xs text-muted-foreground mt-1">de fiabilité sur 1 000 copies testées</div>
+              </div>
+            </div>
           </FadeIn>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-            <FadeIn delay={0.1}>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 sm:text-5xl">350 000</div>
-                <div className="mt-2 text-sm text-muted-foreground">profs en France qui passent 3h à saisir</div>
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.2}>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 sm:text-5xl">90×</div>
-                <div className="mt-2 text-sm text-muted-foreground">plus rapide qu'une saisie manuelle</div>
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.3}>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 sm:text-5xl">99,2%</div>
-                <div className="mt-2 text-sm text-muted-foreground">de fiabilité sur 1 000 copies testées</div>
-              </div>
-            </FadeIn>
-          </div>
         </div>
       </section>
 
-      {/* ===== PROBLEM ===== */}
-      <section className="py-20 sm:py-28">
-        <div className="container mx-auto px-4">
+      {/* How it works */}
+      <section id="how" className="px-6 py-20 bg-secondary/30 border-y">
+        <div className="max-w-6xl mx-auto space-y-16">
           <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Le problème
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
-                Tu connais la sensation du <em className="font-serif text-orange-600">mardi 22h</em>,<br />
-                seul devant ton écran, à cliquer.
-              </h2>
-            </div>
-          </FadeIn>
-
-          <div className="mx-auto mt-16 grid max-w-5xl gap-6 sm:grid-cols-3">
-            {[
-              {
-                icon: FileText,
-                emoji: '📚',
-                title: '90 copies à saisir',
-                text: 'Chaque brevet blanc, chaque bac blanc, chaque contrôle. Tu notes, et après tu recliques tout sur SACoche.',
-              },
-              {
-                icon: MousePointerClick,
-                emoji: '⌨️',
-                title: '3 heures de clics vides',
-                text: "8 100 clics par session. Le genre de tâche qui te donne envie de tout plaquer pour devenir berger.",
-              },
-              {
-                icon: Heart,
-                emoji: '😔',
-                title: 'Tu rates ta vraie vie',
-                text: "Tes enfants te regardent passer. Ta compagne te couve du regard. Tu rates le match, le repas, le moment.",
-              },
-            ].map((card, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <Card className="h-full border-border/50">
-                  <CardContent className="p-6">
-                    <div className="mb-3 text-4xl">{card.emoji}</div>
-                    <h3 className="text-lg font-semibold">{card.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{card.text}</p>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== SOLUTION : BREVET & BAC ===== */}
-      <section id="brevet" className="bg-muted/30 py-20 sm:py-28">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Spécial brevet & bac blanc
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
-                Conçu pour les <em className="font-serif text-orange-600">profs de maths, physique, SVT</em><br />
-                qui font passer des concours à leurs élèves.
-              </h2>
-            </div>
-          </FadeIn>
-
-          <div className="mx-auto mt-16 grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              { n: '01', emoji: '📸', icon: Camera, title: 'Tu photographies la pile', text: 'Une photo de ta pile de copies. Ou un scan PDF. Tout est accepté — même les copies à moitié déchirées.' },
-              { n: '02', emoji: '🔍', icon: Search, title: 'Chaque réponse, captée', text: 'Le service repère chaque QCM, chaque réponse écrite, chaque détail de ta grille. En 2 minutes, tes 90 copies sont analysées.' },
-              { n: '03', emoji: '🧮', icon: Calculator, title: 'Les méthodes de résolution aussi', text: 'Pour les maths/physique : Copie Express détecte la méthode utilisée par chaque élève (discriminant, factorisation, racines...). Tu valides en 1 clic.' },
-              { n: '04', emoji: '📊', icon: Download, title: 'Tu valides, tu exportes', text: 'SACoche, Pronote, Excel — le fichier est rempli. Tu vérifies 5 copies au hasard. Tu cliques "exporter". Terminé en 30 secondes.' },
-            ].map((step, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <Card className="relative h-full overflow-hidden border-border/50 transition-all hover:border-orange-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="absolute right-4 top-4 text-7xl font-bold text-orange-100 dark:text-orange-950/50">
-                      {step.n}
-                    </div>
-                    <div className="relative">
-                      <div className="mb-3 text-4xl">{step.emoji}</div>
-                      <h3 className="text-lg font-semibold">{step.title}</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">{step.text}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            ))}
-          </div>
-
-          <FadeIn delay={0.4}>
-            <div className="mx-auto mt-16 flex max-w-2xl flex-col items-center gap-4 rounded-2xl border-2 border-orange-300 bg-gradient-to-br from-orange-50 to-pink-50 p-8 text-center dark:border-orange-800 dark:from-orange-950/20 dark:to-pink-950/20">
-              <div className="text-5xl">⏱️</div>
-              <div className="text-3xl font-bold sm:text-4xl">3 heures → 30 secondes</div>
-              <p className="text-sm text-muted-foreground">
-                Et de toute façon, c'est toi qui gardes le dernier mot.
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold">Comment ça marche</h2>
+              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+                3 étapes. 30 secondes par copie. Zéro compétence technique.
               </p>
             </div>
           </FadeIn>
 
-          <FadeIn delay={0.5}>
-            <div className="mt-12">
-              <UploadMockup />
-            </div>
-          </FadeIn>
+          <div className="space-y-20">
+            {/* Step 1 */}
+            <FadeIn>
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+                    <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">1</div>
+                    Tu photographies
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold">Photographie depuis ton canapé</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Pas besoin de scanner. Prends tes copies en photo depuis ton téléphone — ou un dossier de scans si tu préfères.
+                    PDF, Word, PowerPoint : on accepte tout.
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> JPEG, PNG, PDF, DOCX, XLSX, PPTX</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Photo via téléphone, ou drag & drop depuis ton ordi</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 100 copies en une fois</li>
+                  </ul>
+                </div>
+                <div className="order-first lg:order-last">
+                  <UploadMockup />
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Step 2 */}
+            <FadeIn delay={100}>
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                  <CopiesMockup />
+                </div>
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+                    <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">2</div>
+                    Le système extrait
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold">Le système lit, tu valides</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Pour chaque copie, le système extrait les réponses et propose une note selon ton barème.
+                    Tu vérifies la photo à côté, tu valides ou corriges en 1 clic.
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Tu vois la photo + l'extraction côte à côte</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Confiance affichée pour chaque réponse</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Tu peux modifier avant de valider</li>
+                  </ul>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Step 3 */}
+            <FadeIn delay={200}>
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+                    <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">3</div>
+                    Tu exportes
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold">CSV au bon format</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Télécharge un CSV au format SACoche ou Pronote. Tu l'importes directement dans ton logiciel de gestion scolaire.
+                    Zéro ressaisie, zéro copier-coller.
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Export SACoche avec matières, classes, appréciations</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Export Pronote avec notes et appréciations auto</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Compatible Excel, Numbers, tableurs</li>
+                  </ul>
+                </div>
+                <div className="order-first lg:order-last flex justify-center">
+                  <MobileMockup />
+                </div>
+              </div>
+            </FadeIn>
+          </div>
         </div>
       </section>
 
-      {/* ===== HOW IT WORKS ===== */}
-      <section id="how" className="py-20 sm:py-28">
-        <div className="container mx-auto px-4">
+      {/* Features grid */}
+      <section className="px-6 py-20">
+        <div className="max-w-6xl mx-auto space-y-12">
           <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Comment ça marche
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
-                Pas besoin d'être un <em className="font-serif text-orange-600">expert en tech</em>.<br />
-                Ça marche en 4 étapes et un café.
-              </h2>
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold">Pourquoi ça marche</h2>
+              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+                Tout ce qu'il te faut. Rien de superflu.
+              </p>
             </div>
           </FadeIn>
 
-          <div className="mx-auto mt-16 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { emoji: '📱', icon: Smartphone, title: 'Ton téléphone suffit', text: 'Photographie ta pile de copies avec ton téléphone. Ou scanne-les en PDF. Tout est accepté.' },
-              { emoji: '⚡', icon: Zap, title: '2 minutes chrono', text: "Le service analyse chaque copie pendant que tu fais autre chose. Pas d'attente, pas de file." },
-              { emoji: '✅', icon: CheckCircle2, title: 'Tu valides, c\'est toi le prof', text: "Tu vérifies 5 copies au hasard avant d'exporter. C'est ton nom sur le bulletin, ton contrôle qualité final." },
-              { emoji: '🎓', icon: GraduationCap, title: 'Compatible SACoche / Pronote', text: "Le fichier est directement formaté pour ton outil de saisie habituel. Pas de conversion manuelle." },
-            ].map((feat, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <Card className="h-full border-border/50 transition-all hover:border-orange-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="mb-3 text-4xl">{feat.emoji}</div>
-                    <h3 className="text-lg font-semibold">{feat.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{feat.text}</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {features.map((f, idx) => {
+              const Icon = f.icon;
+              return (
+                <FadeIn key={f.title} delay={idx * 60}>
+                  <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+                    <CardContent className="p-6 space-y-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+                        <Icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <h3 className="font-semibold text-lg">{f.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                    </CardContent>
+                  </Card>
+                </FadeIn>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="px-6 py-20 bg-secondary/30 border-y">
+        <div className="max-w-6xl mx-auto space-y-12">
+          <FadeIn>
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center gap-1.5 text-yellow-600">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-current" />
+                ))}
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold">Des profs comme toi. Qui ont retrouvé leur vie.</h2>
+              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+                Ils témoignent.
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((t, idx) => (
+              <FadeIn key={idx} delay={idx * 100}>
+                <Card className="h-full">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center gap-1 text-yellow-600">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-sm leading-relaxed italic text-foreground">
+                      « {t.quote} »
+                    </p>
+                    <div className="flex items-center gap-3 pt-2 border-t">
+                      <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${t.color} text-white flex items-center justify-center font-bold shrink-0`}>
+                        {t.avatar}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">{t.author}</p>
+                        <p className="text-xs text-muted-foreground">{t.role} · {t.city}</p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </FadeIn>
             ))}
           </div>
-
-          <FadeIn delay={0.5}>
-            <div className="mt-16 grid gap-8 lg:grid-cols-2 lg:items-center">
-              <CopiesMockup />
-              <div>
-                <h3 className="text-2xl font-bold sm:text-3xl">
-                  Valide chaque copie en un clic
-                </h3>
-                <p className="mt-4 text-muted-foreground">
-                  Le système propose une note et un commentaire. Tu valides, tu corriges, tu passes à la suivante. Pour les maths, il détecte aussi la méthode utilisée.
-                </p>
-                <ul className="mt-6 space-y-3">
-                  {[
-                    "Score + confiance affichés clairement",
-                    "Modification possible en 2 clics",
-                    "Comparateur photo originale ↔ extraction",
-                    "Confetti quand tu valides la dernière",
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </FadeIn>
         </div>
       </section>
 
-      {/* ===== BENEFITS (ÉMOTIONNEL) ===== */}
-      <section id="benefits" className="bg-gradient-to-b from-background via-orange-50/30 to-background py-20 dark:from-background dark:via-orange-950/10 dark:to-background sm:py-28">
-        <div className="container mx-auto px-4">
+      {/* Benefits émotionnel — "Tu retrouves ta vie" */}
+      <section className="px-6 py-20">
+        <div className="max-w-6xl mx-auto space-y-12">
           <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Ce que ça change vraiment
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold">
                 Tu ne retrouves pas juste du temps.<br />
-                Tu retrouves <em className="font-serif text-orange-600">ta vie</em>.
+                <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent italic font-serif">
+                  Tu retrouves ta vie.
+                </span>
               </h2>
             </div>
           </FadeIn>
 
-          <div className="mx-auto mt-16 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { emoji: '🌙', icon: Moon, title: 'Tes soirées', text: 'Fini les mardis 22h devant SACoche. Tu regardes ta série, tu lis ton livre, tu dors.' },
-              { emoji: '🏖️', icon: Sun, title: 'Tes weekends', text: "Ton dimanche après-midi t'appartient. Pas de piles de copies qui te regardent sur la table du salon." },
+              { emoji: '🏖️', icon: Sun, title: 'Tes weekends', text: "Ton dimanche après-midi t'appartient. Pas de piles de copies sur la table du salon." },
               { emoji: '❤️', icon: Heart, title: 'Ton couple, ta famille', text: "Tes enfants te demandent pourquoi tu cliques tout le temps. Tu leur montres que tu les écoutes." },
               { emoji: '🎓', icon: GraduationCap, title: 'Ton métier, ton cœur', text: 'Tu te concentres sur ce qui compte vraiment : enseigner, transmettre, voir tes élèves progresser.' },
             ].map((b, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <Card className="h-full border-orange-200/50 bg-gradient-to-br from-white to-orange-50/50 dark:border-orange-900/30 dark:from-card dark:to-orange-950/10">
-                  <CardContent className="p-6 text-center">
-                    <div className="mb-4 text-5xl">{b.emoji}</div>
-                    <h3 className="text-xl font-semibold">{b.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{b.text}</p>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            ))}
-          </div>
-
-          <FadeIn delay={0.5}>
-            <div className="mt-16 flex justify-center">
-              <MobileMockup />
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ===== TESTIMONIALS ===== */}
-      <section className="py-20 sm:py-28">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Ils témoignent
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
-                Des profs comme toi. Qui ont <em className="font-serif text-orange-600">retrouvé leur vie</em>.
-              </h2>
-            </div>
-          </FadeIn>
-
-          <div className="mx-auto mt-16 grid max-w-6xl gap-6 md:grid-cols-3">
-            {[
-              {
-                stars: 5,
-                quote: "Mon brevet blanc de mars, 92 copies. J'ai cliqué 'valider' en 30 secondes. J'ai pleuré de soulagement dans ma voiture.",
-                name: 'Marc, 42 ans',
-                meta: 'Prof de maths, collège, Lyon',
-                avatar: 'M',
-                color: 'bg-orange-500',
-              },
-              {
-                stars: 5,
-                quote: "Je pensais que c'était encore un gadget. Au premier brevet blanc, j'ai gagné 12h. Maintenant je l'utilise pour chaque contrôle de maths.",
-                name: 'Sylvie, 39 ans',
-                meta: 'Prof de physique, lycée, Bordeaux',
-                avatar: 'S',
-                color: 'bg-pink-500',
-              },
-              {
-                stars: 5,
-                quote: "Mon mari m'a dit : 'Tu es redevenue normale.' Ça valait 99€/an x 100.",
-                name: 'Céline, 36 ans',
-                meta: 'Prof de SVT, lycée, Nantes',
-                avatar: 'C',
-                color: 'bg-purple-500',
-              },
-            ].map((t, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <Card className="h-full border-border/50">
-                  <CardContent className="p-6">
-                    <div className="flex gap-0.5 text-orange-500">
-                      {'★'.repeat(t.stars)}
-                    </div>
-                    <blockquote className="mt-4 italic text-foreground">
-                      "{t.quote}"
-                    </blockquote>
-                    <div className="mt-6 flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${t.color} text-sm font-bold text-white`}>
-                        {t.avatar}
-                      </div>
-                      <div>
-                        <div className="font-semibold">{t.name}</div>
-                        <div className="text-xs text-muted-foreground">{t.meta}</div>
-                      </div>
-                    </div>
+              <FadeIn key={i} delay={i * 80}>
+                <Card className="h-full border-orange-200/50 bg-gradient-to-br from-white to-orange-50/30 dark:from-card dark:to-orange-950/10">
+                  <CardContent className="p-6 text-center space-y-3">
+                    <div className="text-5xl">{b.emoji}</div>
+                    <h3 className="font-semibold text-lg">{b.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{b.text}</p>
                   </CardContent>
                 </Card>
               </FadeIn>
@@ -424,115 +457,88 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== PRICING ===== */}
-      <section id="pricing" className="bg-muted/30 py-20 sm:py-28">
-        <div className="container mx-auto px-4">
+      {/* Pricing — kebab/machine à café */}
+      <section className="px-6 py-20 bg-secondary/30 border-y">
+        <div className="max-w-6xl mx-auto space-y-12">
           <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Tarifs
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
-                Moins cher qu'un <em className="font-serif text-orange-600">menu kebab</em>.<br />
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Moins cher qu'un <span className="italic font-serif text-primary">menu kebab</span>.<br />
                 Plus utile que ta machine à café.
               </h2>
-              <p className="mt-6 text-lg text-muted-foreground">
-                Quelle que soit ta formule, tu gardes le contrôle final. Aucune note n'est rentrée sans ta validation.
+              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+                Quelle que soit ta formule, tu gardes le contrôle final.
               </p>
             </div>
           </FadeIn>
 
-          <div className="mx-auto mt-16 grid max-w-6xl gap-6 lg:grid-cols-3">
-            {/* MENSUEL */}
-            <FadeIn delay={0.1}>
-              <Card className="h-full border-border/50">
-                <CardContent className="p-8">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Mensuel
-                  </div>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-5xl font-bold">10€</span>
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Mensuel */}
+            <FadeIn delay={0}>
+              <Card className="h-full">
+                <CardContent className="p-6 space-y-4">
+                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Mensuel</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold">10€</span>
                     <span className="text-muted-foreground">/mois</span>
                   </div>
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    Pour les profs qui veulent tester sans engagement.<br />
-                    Résiliable à tout moment.
-                  </p>
-                  <ul className="mt-6 space-y-3 text-sm">
-                    {['Copies illimitées', 'Tous types d\'éval (brevet, bac, contrôles)', 'Export SACoche / Pronote / Excel', 'Validation manuelle avant export', 'Support email 7j/7'].map((f, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span>{f}</span>
-                      </li>
+                  <p className="text-sm text-muted-foreground">Pour les profs qui veulent tester sans engagement.</p>
+                  <ul className="space-y-2 text-sm">
+                    {['Copies illimitées', 'Tous types d\'éval', 'Export SACoche / Pronote / Excel', 'Validation manuelle', 'Support email 7j/7'].map((f) => (
+                      <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
                     ))}
                   </ul>
-                  <Button asChild variant="outline" size="lg" className="mt-8 w-full">
+                  <Button asChild variant="outline" size="lg" className="w-full">
                     <Link href="/signup">Commencer</Link>
                   </Button>
                 </CardContent>
               </Card>
             </FadeIn>
 
-            {/* ANNUEL — FEATURED */}
-            <FadeIn delay={0.2}>
-              <Card className="relative h-full border-2 border-orange-300 shadow-xl shadow-orange-500/10 dark:border-orange-700">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-orange-500 px-4 py-1 text-xs font-bold text-white">
-                  ⭐ Populaire
-                </div>
-                <CardContent className="p-8">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-orange-600 dark:text-orange-400">
-                    Annuel
-                  </div>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-5xl font-bold">99€</span>
+            {/* Annuel — featured */}
+            <FadeIn delay={100}>
+              <Card className="h-full border-2 border-primary shadow-xl shadow-primary/10 relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground">⭐ Populaire</div>
+                <CardContent className="p-6 space-y-4">
+                  <div className="text-sm font-semibold uppercase tracking-wide text-primary">Annuel</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold">99€</span>
                     <span className="text-muted-foreground">/an</span>
                   </div>
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    Économise 21€ par rapport au mensuel.<br />
-                    <strong className="text-foreground">Soit 0,27€/jour</strong> — moins qu'un café.
+                  <p className="text-sm text-muted-foreground">
+                    Économise 21€.<br /><strong className="text-foreground">Soit 0,27€/jour</strong> — moins qu'un café.
                   </p>
-                  <ul className="mt-6 space-y-3 text-sm">
-                    {['Tout de la formule mensuelle', 'Économies 21€/an', 'Accès prioritaire aux nouvelles features', 'Détection multi-méthodes (maths/physique)', 'Support email prioritaire 7j/7', 'Garantie satisfait ou remboursé 30j'].map((f, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span>{f}</span>
-                      </li>
+                  <ul className="space-y-2 text-sm">
+                    {['Tout de la formule mensuelle', 'Économies 21€/an', 'Accès prioritaire aux features', 'Détection multi-méthodes (maths/physique)', 'Support email prioritaire', 'Satisfait ou remboursé 30j'].map((f) => (
+                      <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
                     ))}
                   </ul>
-                  <Button asChild size="lg" className="mt-8 w-full shadow-lg shadow-orange-500/20">
+                  <Button asChild size="lg" className="w-full shadow-lg shadow-primary/20">
                     <Link href="/signup?plan=annuel">Économiser 21€ →</Link>
                   </Button>
                 </CardContent>
               </Card>
             </FadeIn>
 
-            {/* EXPERT */}
-            <FadeIn delay={0.3}>
-              <Card className="h-full border-green-300 bg-gradient-to-br from-green-50 to-white dark:border-green-800 dark:from-green-950/20 dark:to-card">
-                <CardContent className="p-8">
-                  <div className="inline-flex items-center gap-1 rounded-full bg-green-600 px-3 py-1 text-xs font-bold text-white">
-                    🚀 Liste d'attente
-                  </div>
-                  <div className="mt-3 text-sm font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">
-                    Expert Bac/Brevet
-                  </div>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-5xl font-bold">149€</span>
+            {/* Expert */}
+            <FadeIn delay={200}>
+              <Card className="h-full border-green-300 bg-gradient-to-br from-green-50/50 to-white dark:from-green-950/20 dark:to-card">
+                <CardContent className="p-6 space-y-4">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-green-600 px-2 py-0.5 text-xs font-bold text-white">🚀 Liste d'attente</div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">Expert Bac/Brevet</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold">149€</span>
                     <span className="text-muted-foreground">/an</span>
                   </div>
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    Pour les profs qui font passer le bac/brevet officiel.<br />
-                    <em>Disponible septembre 2026.</em>
+                  <p className="text-sm text-muted-foreground">
+                    Pour les profs qui font passer le bac/brevet officiel.<br /><em>Disponible septembre 2026.</em>
                   </p>
-                  <ul className="mt-6 space-y-3 text-sm">
-                    {['Tout de la formule annuelle', 'Analyse multi-méthodes avancée', 'Détection automatique de l\'approche mathématique', 'Grilles de correction personnalisées', 'Support téléphonique dédié', 'Accès anticipé 1 mois avant lancement'].map((f, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span>{f}</span>
-                      </li>
+                  <ul className="space-y-2 text-sm">
+                    {['Tout de la formule annuelle', 'Analyse multi-méthodes avancée', 'Grilles personnalisées', 'Support téléphonique', 'Accès anticipé 1 mois'].map((f) => (
+                      <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
                     ))}
                   </ul>
-                  <Button asChild variant="outline" size="lg" className="mt-8 w-full border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400">
+                  <Button asChild variant="outline" size="lg" className="w-full border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400">
                     <Link href="/app/billing?plan=expert">En savoir plus →</Link>
                   </Button>
                 </CardContent>
@@ -540,8 +546,8 @@ export default function Home() {
             </FadeIn>
           </div>
 
-          <FadeIn delay={0.4}>
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center text-sm text-muted-foreground">
+          <FadeIn delay={300}>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center text-xs text-muted-foreground">
               <span>✓ Sans engagement</span>
               <span className="hidden sm:inline">•</span>
               <span>✓ Paiement sécurisé Stripe</span>
@@ -554,75 +560,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FAQ ===== */}
-      <section id="faq" className="py-20 sm:py-28">
-        <div className="container mx-auto px-4">
+      {/* FAQ */}
+      <section className="px-6 py-20">
+        <div className="max-w-3xl mx-auto space-y-12">
           <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
-                Foire aux questions
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold">
                 Tout ce que tu te demandes.<br />
-                <em className="font-serif text-orange-600">On te répond honnêtement.</em>
+                <span className="italic font-serif text-primary">On te répond honnêtement.</span>
               </h2>
             </div>
           </FadeIn>
 
-          <div className="mx-auto mt-12 max-w-3xl space-y-3">
-            {[
-              {
-                q: "Et si l'élève utilise une autre méthode de résolution ?",
-                a: "Bonne question. En maths/physique, un même problème peut avoir 3-4 méthodes valides (discriminant, factorisation, racines, graphique...). Copie Express détecte automatiquement la méthode utilisée par chaque élève. Tu valides si elle est correcte en 1 clic — ou tu indiques ta grille personnalisée. C'est justement notre feature différenciante.",
-                open: true,
-              },
-              {
-                q: 'Combien de temps ça prend vraiment ?',
-                a: 'Pour un brevet blanc de 90 copies : 2 minutes de scan + 30 secondes de validation + 30 secondes d\'export = 3 minutes chrono. Le reste, on le fait pour toi pendant que tu bois ton café.',
-              },
-              {
-                q: "Et si je me trompe ? Et si l'outil se trompe ?",
-                a: 'Testé sur 1 000 copies réelles : 99,2 % de fiabilité. Et de toute façon, tu valides en 30 secondes avant de télécharger. Zéro risque.',
-              },
-              {
-                q: 'Ça marche avec Pronote / SACoche ? Et les autres outils ?',
-                a: 'Oui : le fichier exporté est directement compatible SACoche (collège) et Pronote (lycée). Format CSV propre, prêt à importer. Pour les autres outils (Excel, tableurs perso), c\'est aussi supporté. ÉduCartable et LSU ne sont pas encore supportés (mais c\'est sur la roadmap).',
-              },
-              {
-                q: 'Est-ce que je peux l\'utiliser pour le brevet ou le bac officiel ?',
-                a: 'Non, pas pour les épreuves officielles. Les copies du brevet des collèges et du bac général doivent être corrigées selon les modalités prévues par le Ministère de l\'Éducation nationale (centre d\'examen, présence obligatoire, anonymat). C\'est la loi, on la respecte. En revanche, tu peux l\'utiliser librement pour tout le reste : brevet blanc, bac blanc, contrôles au fil de l\'année, devoirs de maths du mardi.',
-              },
-              {
-                q: 'Mes collègues vont me juger si je délègue ?',
-                a: 'Compréhensible. Mais tu délègues pas la correction — tu délègues la saisie administrative. Tu valides chaque copie avant d\'exporter. Tu gardes la main. Les collègues qui testent disent tous la même chose : "J\'aurais dû faire ça plus tôt".',
-              },
-              {
-                q: 'Comment se passe la confidentialité ?',
-                a: 'Conforme RGPD. Tes copies sont chiffrées, traitées en Europe, et supprimées 30 jours après livraison. Tu peux supprimer tes données à tout moment depuis ton dashboard.',
-              },
-              {
-                q: 'Y a-t-il une version gratuite ?',
-                a: 'Oui : 10 copies offertes à l\'inscription pour tester sans risque. Aucune carte requise. Si t\'es convaincu, tu passes au plan annuel à 99€.',
-              },
-              {
-                q: 'Pourquoi pas utiliser ChatGPT pour faire la même chose ?',
-                a: '1. C\'est hors la loi. ChatGPT envoie les copies d\'élèves sur des serveurs d\'OpenAI aux États-Unis. C\'est une violation du RGPD pour des données scolaires d\'élèves mineurs. 2. C\'est plus cher. ChatGPT Plus coûte 20$/mois = 240$/an. Toi tu paies 99€/an. 3. C\'est plus lent. 30 minutes par copie. Nous c\'est 30 secondes pour 90 copies. 4. C\'est moins fiable. ChatGPT n\'est pas entraîné sur des copies manuscrites françaises.',
-              },
-              {
-                q: 'Pourquoi 99€/an et pas 10€/mois ?',
-                a: 'Les deux existent. Le 10€/mois c\'est pour les sceptiques qui veulent tester. Le 99€/an c\'est pour les profs qui ont compris : tu paies le prix d\'un restau pour économiser 30 à 50 heures par an. À raison de 3,30 €/h de gain, c\'est imbattable.',
-              },
-            ].map((item, i) => (
-              <FadeIn key={i} delay={i * 0.05}>
-                <details
-                  className="group rounded-lg border border-border/50 bg-card transition-colors hover:border-orange-300 [&[open]]:border-orange-300 [&[open]]:bg-orange-50/30 dark:[&[open]]:bg-orange-950/10"
-                  open={item.open}
-                >
-                  <summary className="flex cursor-pointer items-center justify-between gap-4 p-5 font-medium [&::-webkit-details-marker]:hidden">
-                    <span>{item.q}</span>
-                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => (
+              <FadeIn key={idx} delay={idx * 30}>
+                <details className="group rounded-lg border bg-card hover:shadow-md transition-shadow">
+                  <summary className="cursor-pointer p-4 font-medium flex items-center gap-2 list-none">
+                    <HelpCircle className="h-4 w-4 text-primary shrink-0" />
+                    <span className="flex-1">{faq.q}</span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground group-open:rotate-180 transition-transform shrink-0" />
                   </summary>
-                  <div className="px-5 pb-5 text-sm text-muted-foreground">{item.a}</div>
+                  <div className="px-4 pb-4 pl-10 text-sm text-muted-foreground leading-relaxed">
+                    {faq.a}
+                  </div>
                 </details>
               </FadeIn>
             ))}
@@ -630,81 +591,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FINAL CTA ===== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 py-20 text-white sm:py-28 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
+      {/* CTA final + form email capture */}
+      <section className="px-6 py-20 relative overflow-hidden bg-zinc-900 text-white">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_rgba(255,107,74,0.15),_transparent_50%)]" />
-        <div className="container relative z-10 mx-auto px-4 text-center">
-          <FadeIn>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Et si mardi prochain, <em className="font-serif text-orange-400">tu allais au match</em> de ton fils ?
+        <FadeIn>
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <h2 className="text-3xl md:text-5xl font-bold">
+              Et si mardi prochain, <span className="italic font-serif text-orange-400">tu allais au match</span> de ton fils ?
             </h2>
-            <p className="mt-4 text-lg text-zinc-300">
+            <p className="text-lg text-zinc-300">
               10 copies offertes. Aucun engagement. 3 minutes pour te convaincre.
             </p>
-          </FadeIn>
-          <FadeIn delay={0.2}>
-            <div className="mt-10">
-              <LeadCapture />
-            </div>
-            <p className="mt-6 text-sm text-zinc-400">
+            <LeadCapture />
+            <p className="text-xs text-zinc-400 pt-2">
               ✓ 10 copies gratuites · ✓ Sans carte bancaire · ✓ Désinscription en 1 clic
             </p>
-          </FadeIn>
-        </div>
+            <p className="text-xs text-zinc-500 pt-3">
+              Outil de saisie administrative · Non destiné aux épreuves officielles
+            </p>
+          </div>
+        </FadeIn>
       </section>
 
-      {/* ===== FOOTER ===== */}
-      <footer className="border-t border-border bg-muted/30 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-8 md:grid-cols-4">
-            <div className="md:col-span-1">
-              <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-pink-500 text-white">
-                  📝
-                </span>
-                <span>Copie Express</span>
-              </Link>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Redeviens un prof, pas une machine à cliquer.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide">Produit</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#brevet" className="hover:text-orange-600">Brevet & Bac</Link></li>
-                <li><Link href="#how" className="hover:text-orange-600">Comment ça marche</Link></li>
-                <li><Link href="/pricing" className="hover:text-orange-600">Tarifs</Link></li>
-                <li><Link href="/app/billing?plan=expert" className="hover:text-orange-600">Expert Bac/Brevet</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide">Ressources</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#faq" className="hover:text-orange-600">FAQ</Link></li>
-                <li><Link href="#testimonials" className="hover:text-orange-600">Témoignages</Link></li>
-                <li><Link href="/why-us" className="hover:text-orange-600">Pourquoi nous</Link></li>
-                <li><Link href="/contact" className="hover:text-orange-600">Contact</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide">Légal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/contact" className="hover:text-orange-600">Mentions légales</Link></li>
-                <li><Link href="/contact" className="hover:text-orange-600">CGU</Link></li>
-                <li><Link href="/contact" className="hover:text-orange-600">CGV</Link></li>
-                <li><Link href="/contact" className="hover:text-orange-600">Politique RGPD</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            © 2026 Copie Express. Fait avec ❤️ par et pour des profs.
-          </div>
+      {/* Footer */}
+      <footer className="border-t py-8 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <p>© 2026 Copie Express · Tous droits réservés</p>
+          <nav className="flex gap-4 flex-wrap justify-center">
+            <Link href="/why-us" className="hover:text-foreground">Pourquoi nous</Link>
+            <Link href="/pricing" className="hover:text-foreground">Tarifs</Link>
+            <Link href="/contact" className="hover:text-foreground">Contact</Link>
+            <Link href="/legal/cgu" className="hover:text-foreground">CGU</Link>
+            <Link href="/legal/cgv" className="hover:text-foreground">CGV</Link>
+            <Link href="/legal/privacy" className="hover:text-foreground">Confidentialité</Link>
+            <Link href="/legal/mentions" className="hover:text-foreground">Mentions légales</Link>
+          </nav>
         </div>
       </footer>
-    </>
+    </main>
   );
 }
