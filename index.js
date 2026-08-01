@@ -100,7 +100,6 @@ const supabase = createClient(
 );
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const mistral = new Mistral(process.env.MISTRAL_API_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // === HEALTH ===
