@@ -40,10 +40,13 @@ app.get('/api/health', (req, res) => {
 // === UPLOAD BARÈME (optionnel, 1 fois par évaluation) ===
 // Upload une PHOTO du barème (ou PDF), OCR Mistral pour extraire le texte
 app.post('/api/grading-key', upload.single('file'), async (req, res) => {
+  console.log('[GRADING-KEY] request received, headers:', req.headers['content-type']);
+  console.log('[GRADING-KEY] body keys:', Object.keys(req.body));
+  console.log('[GRADING-KEY] file:', req.file ? { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype } : null);
   try {
     const { evaluationId, userId } = req.body;
-    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
-    if (!req.file) return res.status(400).json({ error: 'no_file' });
+    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params', received: { evaluationId: !!evaluationId, userId: !!userId } });
+    if (!req.file) return res.status(400).json({ error: 'no_file', hint: 'multer did not parse the file' });
 
     // Vérifier que l'éval appartient au user
     const { data: evalData, error: evalError } = await supabase
@@ -109,10 +112,13 @@ app.post('/api/grading-key', upload.single('file'), async (req, res) => {
 
 // === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
 app.post('/api/subject', upload.single('file'), async (req, res) => {
+  console.log('[SUBJECT] request received, headers:', req.headers['content-type']);
+  console.log('[SUBJECT] body keys:', Object.keys(req.body));
+  console.log('[SUBJECT] file:', req.file ? { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype } : null);
   try {
     const { evaluationId, userId } = req.body;
-    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
-    if (!req.file) return res.status(400).json({ error: 'no_file' });
+    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params', received: { evaluationId: !!evaluationId, userId: !!userId } });
+    if (!req.file) return res.status(400).json({ error: 'no_file', hint: 'multer did not parse the file' });
 
     // Vérifier que l'éval appartient au user
     const { data: evalData, error: evalError } = await supabase
