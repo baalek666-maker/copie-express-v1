@@ -409,19 +409,43 @@ JSON STRICT (rien d'autre) :
   "overall_confidence": 0.0-1.0
 }`;
     } else {
-      // MODE SIMPLE : juste extraction des réponses (sans notation)
-      userPrompt = `${hasSubject ? 'Voici le SUJET et la COPIE de l\'élève. Extrait ses réponses en te basant sur les questions du sujet.' : 'Voici la COPIE de l\'élève. Extrait ses réponses.'}
+      // MODE SANS BARÈME : extraction + notation autonome (le LLM déduit les bonnes réponses)
+      userPrompt = `Tu es un correcteur de copies d'élèves français.
+
+${hasSubject ? "Voici le SUJET du contrôle et la COPIE de l'élève." : "Voici la COPIE de l'élève."}
 
 ${promptContext}Texte OCR de la copie :
 """
 ${ocrText}
 """
 
-JSON STRICT :
+TÂCHE :
+1. Identifie le numéro/nom de l'élève s'il est écrit sur la copie
+2. Pour CHAQUE question visible dans la copie, trouve la réponse de l'élève
+3. ${hasSubject ? 'En te basant sur le SUJET,' : 'En utilisant tes connaissances,'} détermine la RÉPONSE ATTENDUE pour chaque question
+4. Compare la réponse de l'élève avec la réponse attendue
+5. Tolère les fautes de frappe mineures (1-2 caractères) et les variations de casse
+6. Si l'élève n'a pas répondu ou a écrit "?" / "je sais pas" → false
+7. Si illisible → "unclear" + false
+8. Pour les calculs mathématiques, vérifie le résultat numérique
+
+JSON STRICT (rien d'autre) :
 {
-  "student_identifier": "eleve_XX" | null,
-  "answers": {"<question_id>": "réponse élève" | null, ...},
-  "confidence": 0.0-1.0
+  "student_identifier": "eleve_001" | null,
+  "answers": [
+    {
+      "question_id": "1",
+      "question_text": "2+2=?" | null,
+      "student_wrote": "5" | null,
+      "expected": "4",
+      "is_correct": true | false,
+      "confidence": 0.0-1.0
+    },
+    ...
+  ],
+  "total_correct": <nombre entier>,
+  "total_questions": <nombre entier>,
+  "overall_confidence": 0.0-1.0
 }`;
     }
 
@@ -436,10 +460,10 @@ JSON STRICT :
       },
     ], true);
 
-    // Calcul du score total
+    // Calcul du score total (valable pour les deux modes : avec et sans barème)
     let totalScore = null;
     let maxScore = null;
-    if (hasGradingKey && parsed.answers && Array.isArray(parsed.answers)) {
+    if (parsed.answers && Array.isArray(parsed.answers)) {
       totalScore = parsed.answers.filter(a => a.is_correct === true).length;
       maxScore = parsed.total_questions || parsed.answers.length;
     }

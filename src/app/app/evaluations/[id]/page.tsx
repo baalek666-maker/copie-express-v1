@@ -121,6 +121,21 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
       <div className="space-y-6">
         <PhotoTips />
 
+        {!evaluation.grading_key && !evaluation.grading_key_storage_path && (
+          <Card className="border-amber-300 bg-amber-50">
+            <CardContent className="p-4 flex items-start gap-3">
+              <FileText className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-amber-900">📊 Pas de barème ? L'IA devine, mais c'est moins fiable.</p>
+                <p className="text-sm text-amber-800 mt-1">
+                  Sans barème, on note en se basant sur le sujet et nos connaissances (ça marche bien pour les maths/calculs, moins pour les dissertations).
+                  Pour une précision maximale, upload une photo de ton corrigé type → notation exacte question par question.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <SubjectUploader
           evaluationId={params.id}
           existingSubjectPath={evaluation.subject_storage_path}
