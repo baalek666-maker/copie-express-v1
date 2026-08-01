@@ -67,17 +67,24 @@ async function mistralOcr(supabaseSignedUrl) {
   const fileId = fileData.id;
 
   // Step 3 : OCR avec file_id
+  // Pour les fichiers Office (docx/xlsx/pptx), il faut image_limit=0
+  const ocrBody = {
+    model: 'mistral-ocr-latest',
+    document: { type: 'file', file_id: fileId },
+    include_image_base64: false,
+  };
+  // Office docs nécessitent image_limit=0 pour éviter l'erreur 3051
+  if (contentType.includes('officedocument') || contentType.includes('ms-')) {
+    ocrBody.image_limit = 0;
+  }
+
   const ocrResponse = await fetch(`${MISTRAL_API_URL}/ocr`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
     },
-    body: JSON.stringify({
-      model: 'mistral-ocr-latest',
-      document: { type: 'file', file_id: fileId },
-      include_image_base64: false,
-    }),
+    body: JSON.stringify(ocrBody),
   });
   if (!ocrResponse.ok) {
     const err = await ocrResponse.text();
