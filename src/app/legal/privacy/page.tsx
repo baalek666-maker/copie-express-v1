@@ -123,7 +123,7 @@ export default function PrivacyPage() {
         <p>Les photos de copies d&apos;élèves sont des données sensibles. Vous, enseignant, êtes responsable de leur collecte (secret professionnel). Copie Express agit comme sous-traitant au sens du RGPD.</p>
         <p>Engagements de Copie Express :</p>
         <ul>
-          <li>Aucune copie n&apos;est utilisée pour entraîner des modèles d&apos;IA</li>
+          <li>Aucune copie n&apos;est utilisée pour entraîner des modèles</li>
           <li>Aucune copie n&apos;est partagée avec des tiers</li>
           <li>Suppression automatique des copies après 30 jours</li>
           <li>Hébergement exclusif en UE (Supabase Frankfurt)</li>

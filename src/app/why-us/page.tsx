@@ -25,7 +25,7 @@ export default function WhyUsPage() {
     },
     {
       icon: Brain,
-      title: 'Pas une IA qui note seule',
+      title: 'Le système propose, tu décides',
       desc: 'Tu gardes le contrôle. Le système propose, tu valides ou corriges.',
     },
     {
@@ -36,7 +36,7 @@ export default function WhyUsPage() {
     {
       icon: Shield,
       title: 'RGPD by design',
-      desc: 'Données hébergées en Europe, suppression auto 30j, jamais utilisées pour entraîner des IA.',
+      desc: 'Données hébergées en Europe, suppression auto 30j, jamais utilisées pour entraîner des modèles.',
     },
     {
       icon: FileText,

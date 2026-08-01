@@ -68,7 +68,7 @@ export default function CGUPage() {
           <li>Prix : 149 € TTC / an</li>
           <li>Copies illimitées (jusqu&apos;à 3 000 / mois, mesures anti-abus)</li>
           <li>Bibliothèque de barèmes experts (à venir)</li>
-          <li>Correcteur IA calibré brevet/bac (à venir)</li>
+          <li>Correcteur calibré brevet/bac (à venir)</li>
           <li>Mises à jour barèmes offertes</li>
           <li>Accès anticipé aux nouvelles fonctionnalités</li>
         </ul>

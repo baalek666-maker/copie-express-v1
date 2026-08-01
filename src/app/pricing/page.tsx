@@ -61,7 +61,7 @@ export default function PricingPage() {
       features: [
         'Tout l\'Annuel Standard',
         'Bibliothèque de barèmes experts',
-        'Correcteur IA calibré brevet/bac',
+        'Correcteur calibré brevet/bac',
         'Mises à jour barèmes offertes',
         'Accès anticipé nouvelles features',
       ],

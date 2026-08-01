@@ -126,9 +126,9 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
             <CardContent className="p-4 flex items-start gap-3">
               <FileText className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-amber-900">📊 Pas de barème ? L'IA devine, mais c'est moins fiable.</p>
+                <p className="font-medium text-amber-900">📊 Pas de barème ? La correction automatique est moins fiable.</p>
                 <p className="text-sm text-amber-800 mt-1">
-                  Sans barème, on note en se basant sur le sujet et nos connaissances (ça marche bien pour les maths/calculs, moins pour les dissertations).
+                  Sans barème, le système note en se basant sur le sujet et les réponses attendues classiques (très efficace pour les maths/calculs, moins pour les dissertations ou réponses ouvertes).
                   Pour une précision maximale, upload une photo de ton corrigé type → notation exacte question par question.
                 </p>
               </div>
