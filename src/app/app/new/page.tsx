@@ -60,6 +60,7 @@ export default function NewEvaluationPage() {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [classLevel, setClassLevel] = useState('');
+  const [totalCopies, setTotalCopies] = useState('');
 
   const filteredTemplates = GRADING_TEMPLATES.filter(
     (t) => (!subject || t.subject === subject) && (!classLevel || t.classLevel === classLevel)
@@ -87,12 +88,11 @@ export default function NewEvaluationPage() {
     const { data, error } = await supabase
       .from('evaluations')
       .insert({
-        user_id: user.id,
-        title,
+        title: title.trim(),
         subject,
         class_level: classLevel,
-        grading_key: null,
-        total_copies: 1,
+        user_id: user.id,
+        total_copies: totalCopies ? parseInt(totalCopies, 10) : null,
         grading_scale: [{ id: 'q1', label: 'Question 1', max_points: 1 }],
         status: 'draft',
       })
@@ -182,7 +182,7 @@ export default function NewEvaluationPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="subject">Matière</Label>
                   <Select value={subject} onValueChange={setSubject}>
@@ -209,6 +209,19 @@ export default function NewEvaluationPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="totalCopies">Nb copies</Label>
+                  <Input
+                    id="totalCopies"
+                    type="number"
+                    min="1"
+                    max="500"
+                    placeholder="Ex : 30"
+                    value={totalCopies}
+                    onChange={(e) => setTotalCopies(e.target.value)}
+                  />
                 </div>
               </div>
             </CardContent>

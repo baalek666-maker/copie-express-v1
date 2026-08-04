@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: '%s · Copie Express',
   },
   description: 'Brevet blanc, bac blanc, contrôles : 90 copies en 30 secondes. Photographie depuis ton canapé, export CSV SACoche & Pronote. RGPD + données Europe.',
-  keywords: ['correction copies', 'prof', 'brevet blanc', 'bac blanc', 'SACoche', 'Pronote', 'OCR copies', 'extraction automatique', 'gain de temps prof'],
+  keywords: ['correction copies', 'prof', 'brevet blanc', 'bac blanc', 'SACoche', 'Pronote', 'correction automatique', 'gain de temps prof'],
   authors: [{ name: 'Copie Express' }],
   creator: 'Copie Express',
   publisher: 'Copie Express',

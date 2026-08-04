@@ -81,6 +81,42 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
   return (
     <div className="space-y-3">
       {showConfetti && <Celebration />}
+
+      {/* Bulk validate all pending copies */}
+      {copies.filter((c) => c.status === 'ready_to_validate' && !c.validated_by_user).length > 1 && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border">
+          <span className="text-sm font-medium">
+            {copies.filter((c) => c.status === 'ready_to_validate' && !c.validated_by_user).length} copies prêtes à valider
+          </span>
+          <Button
+            size="sm"
+            onClick={async () => {
+              const pending = copies.filter((c) => c.status === 'ready_to_validate' && !c.validated_by_user);
+              let count = 0;
+              for (const copy of pending) {
+                const score = computeScore(copy.extracted_answers, gradingScale);
+                await supabase.from('copies').update({
+                  validated_by_user: true,
+                  final_score: score,
+                  status: 'validated',
+                  validated_at: new Date().toISOString(),
+                }).eq('id', copy.id);
+                count++;
+              }
+              toast.success(`🎉 ${count} copies validées d'un coup !`, {
+                description: 'Tu peux maintenant exporter vers SACoche/Pronote.',
+              });
+              setShowConfetti(true);
+              setTimeout(() => setShowConfetti(false), 2000);
+              router.refresh();
+            }}
+          >
+            <CheckCircle2 className="h-4 w-4 mr-1" />
+            Tout valider d'un coup
+          </Button>
+        </div>
+      )}
+
       {copies.map((copy, idx) => {
         const isValidated = copy.validated_by_user;
         const isReady = copy.status === 'ready_to_validate';

@@ -136,6 +136,39 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// === JWT AUTH MIDDLEWARE ===
+// Vérifie le token Supabase envoyé dans Authorization: Bearer <token>
+// Le frontend doit envoyer le access_token de la session Supabase
+const authMiddleware = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'unauthorized', hint: 'Missing Authorization: Bearer <token>' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return res.status(401).json({ error: 'invalid_token' });
+    }
+    // Attache le user à la requête pour les handlers
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error('auth middleware error:', err);
+    return res.status(500).json({ error: 'auth_check_failed' });
+  }
+};
+
+// Optionnel : extrait userId depuis le body et vérifie qu'il correspond au JWT
+const requireUserMatch = (req, res, next) => {
+  const bodyUserId = req.body?.userId || req.query?.userId;
+  if (bodyUserId && req.user && bodyUserId !== req.user.id) {
+    return res.status(403).json({ error: 'user_mismatch', hint: 'body.userId does not match JWT user' });
+  }
+  next();
+};
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -150,7 +183,7 @@ app.get('/api/health', (req, res) => {
 
 // === UPLOAD BARÈME (optionnel, 1 fois par évaluation) ===
 // Upload une PHOTO du barème (ou PDF), OCR Mistral pour extraire le texte
-app.post('/api/grading-key', upload.single('file'), async (req, res) => {
+app.post('/api/grading-key', authMiddleware, upload.single('file'), requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
   if (DEBUG) console.log('[GRADING-KEY] file:', req.file?.originalname);
   try {
@@ -215,7 +248,7 @@ app.post('/api/grading-key', upload.single('file'), async (req, res) => {
 });
 
 // === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
-app.post('/api/subject', upload.single('file'), async (req, res) => {
+app.post('/api/subject', authMiddleware, upload.single('file'), requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
   if (DEBUG) console.log('[SUBJECT] file:', req.file?.originalname);
   try {
@@ -258,7 +291,7 @@ app.post('/api/subject', upload.single('file'), async (req, res) => {
 });
 
 // === UPLOAD ===
-app.post('/api/upload', upload.array('files', 100), async (req, res) => {
+app.post('/api/upload', authMiddleware, upload.array('files', 100), requireUserMatch, async (req, res) => {
   try {
     const { evaluationId, userId } = req.body;
     const files = req.files;
@@ -284,7 +317,7 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
 });
 
 // === EXTRACT (Mistral OCR + LLM) ===
-app.post('/api/extract', async (req, res) => {
+app.post('/api/extract', authMiddleware, requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
   const { evaluationId, copyId, userId } = req.body;
   if (!evaluationId || !copyId || !userId) {
@@ -485,10 +518,20 @@ JSON STRICT (rien d'autre) :
 });
 
 // === EXPORT CSV (SACoche / Pronote) ===
+// POST (JSON body) — utilisé par le frontend moderne
 app.post('/api/export', async (req, res) => {
-  const DEBUG = process.env.NODE_ENV !== 'production';
+  const { evaluationId, format } = req.body;
+  await handleExport(res, evaluationId, format);
+});
+
+// GET (query params) — utilisé par les liens directs <a href>
+app.get('/api/export', async (req, res) => {
+  const { evaluationId, format } = req.query;
+  await handleExport(res, evaluationId, format);
+});
+
+async function handleExport(res, evaluationId, format) {
   try {
-    const { evaluationId, format } = req.body; // format: 'sacoche' | 'pronote'
     if (!evaluationId || !format) return res.status(400).json({ error: 'missing_params' });
     if (!['sacoche', 'pronote'].includes(format)) {
       return res.status(400).json({ error: 'invalid_format' });
@@ -557,10 +600,10 @@ app.post('/api/export', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${format}_${evaluationId}.csv"`);
     res.status(200).send(csv);
   } catch (err) {
-    if (DEBUG) console.error('export error:', err);
+    console.error('export error:', err);
     res.status(500).json({ error: 'export_failed', detail: String(err) });
   }
-});
+}
 
 function computeScore(answers, scale, correctAnswers) {
   let total = 0;
@@ -617,9 +660,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 // === CRON RGPD : suppression copies > 30 jours ===
 // À héberger séparément (ex: GitHub Action cron, Railway cron, Vercel cron)
 app.post('/api/cron/cleanup', async (req, res) => {
-  // Sécurisé par un secret partagé (CRON_SECRET)
   const cronSecret = req.headers['x-cron-secret'] || req.body?.secret;
-  if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+  // Toujours exiger un secret — refuse si pas configuré ou ne correspond pas
+  if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
     return res.status(403).json({ error: 'unauthorized' });
   }
   try {
