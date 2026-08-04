@@ -35,8 +35,13 @@ export function SubjectUploader({
       formData.append('userId', user.id);
 
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://copie-express-v1-production.up.railway.app';
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) throw new Error('Session expirée — reconnecte-toi');
+
       const response = await fetch(`${backendUrl}/api/subject`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}` },
         body: formData,
       });
 

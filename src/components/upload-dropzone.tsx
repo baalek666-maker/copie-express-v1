@@ -58,7 +58,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       if (!audit.allowed) {
         if (audit.quota.reason === 'trial_exhausted') {
           toast.error('Trial épuisé', {
-            description: 'Tu as utilisé tes 10 copies gratuites. Passe à un forfait.',
+            description: 'Tu as utilisé tes 5 copies gratuites. Passe à un forfait.',
             action: { label: 'Voir les forfaits', onClick: () => router.push('/pricing') },
           });
           throw new Error('Trial épuisé');
@@ -90,8 +90,14 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       formData.append('userId', user.id);
 
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://copie-express-v1-production.up.railway.app';
+      // Récupère le token JWT pour l'auth middleware backend
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) throw new Error('Session expirée — reconnecte-toi');
+
       const response = await fetch(`${backendUrl}/api/upload`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}` },
         body: formData,
       });
 
@@ -106,6 +112,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
 
       const copiesToInsert = result.paths.map((path: string, i: number) => ({
         evaluation_id: evaluationId,
+        user_id: user.id,
         photo_storage_path: path,
         student_identifier: `eleve_${String(i + 1).padStart(3, '0')}`,
         status: 'pending',
@@ -130,19 +137,29 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
           .order('created_at', { ascending: false })
           .limit(result.paths.length);
 
-        for (let i = 0; i < (firstCopies || []).length; i++) {
-          const copy = (firstCopies || [])[i];
-          try {
-            const extractRes = await fetch(`${backendUrl}/api/extract`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ evaluationId, copyId: copy.id, userId: user.id }),
-            });
-            if (!extractRes.ok) console.error('[extract] failed');
-            setProgress(60 + Math.round((30 * (i + 1)) / (firstCopies || []).length));
-          } catch (err) {
-            console.error('[extract] error', err);
-          }
+        // Extraction PARALLÈLE — 5 copies à la fois pour ne pas saturer Mistral
+        const CONCURRENCY = 5;
+        const copyIds = (firstCopies || []).map((c) => c.id);
+        for (let i = 0; i < copyIds.length; i += CONCURRENCY) {
+          const batch = copyIds.slice(i, i + CONCURRENCY);
+          await Promise.all(
+            batch.map(async (copyId) => {
+              try {
+                const extractRes = await fetch(`${backendUrl}/api/extract`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                  },
+                  body: JSON.stringify({ evaluationId, copyId, userId: user.id }),
+                });
+                if (!extractRes.ok) console.error('[extract] failed for copy:', copyId);
+              } catch (err) {
+                console.error('[extract] error', err);
+              }
+            })
+          );
+          setProgress(60 + Math.round((30 * (i + batch.length)) / copyIds.length));
         }
       }
 

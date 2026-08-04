@@ -2,7 +2,8 @@ import { createBrowserSupabase } from './supabase-browser';
 
 // === CAPS PAR PLAN (anti-abus) ===
 export const PLAN_LIMITS = {
-  discovery: 10, // Total, one-shot
+  discovery: 5, // Total, one-shot (était 10 — trop, le paywall ne déclenchait jamais)
+  petit: 50, // Plan Petit Correcteur 5€/mois
   monthly: 1500, // Par mois
   yearly: 2000, // Par mois
   expert_yearly: 3000, // Par mois
