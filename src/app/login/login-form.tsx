@@ -11,82 +11,105 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetSent, setResetSent] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Gère le callback directement côté client
-  useEffect(() => {
-    const handleCallback = async () => {
-      const code = searchParams.get('code');
-      if (!code) return;
-
-      const supabase = createBrowserSupabase();
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error) {
-        // Si un plan est sélectionné (depuis /pricing), redirige vers /app/billing?plan=X
-        const target = plan ? `/app/billing?plan=${plan}` : '/app';
-        router.push(target);
-        router.refresh();
-      } else {
-        setError('Lien invalide ou expiré. Demande un nouveau lien.');
-      }
-    };
-
-    handleCallback();
-  }, [searchParams, router]);
 
   const isNew = searchParams.get('new') === '1';
   const plan = searchParams.get('plan');
 
-  const handleMagicLink = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isNew) setMode('signup');
+  }, [isNew]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     const supabase = createBrowserSupabase();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
-      },
+
+    if (mode === 'signup') {
+      if (password !== confirmPassword) {
+        setError('Les mots de passe ne correspondent pas.');
+        setLoading(false);
+        return;
+      }
+      if (password.length < 6) {
+        setError('Le mot de passe doit faire au moins 6 caractères.');
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setError(error.message);
+      } else if (data.session) {
+        router.push(plan ? `/app/billing?plan=${plan}` : '/app');
+        router.refresh();
+      } else {
+        setError('Compte créé. Vérifie tes emails pour confirmer ton adresse.');
+      }
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError('Email ou mot de passe incorrect.');
+      } else {
+        router.push(plan ? `/app/billing?plan=${plan}` : '/app');
+        router.refresh();
+      }
+    }
+
+    setLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
     });
 
     if (error) {
       setError(error.message);
-      setLoading(false);
     } else {
-      setSent(true);
-      setLoading(false);
+      setResetSent(true);
     }
+    setLoading(false);
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>{isNew ? 'Créer mon compte' : 'Connexion'}</CardTitle>
+          <CardTitle>{mode === 'signup' ? 'Créer mon compte' : 'Connexion'}</CardTitle>
           <CardDescription>
-            {isNew
-              ? '10 copies gratuites, sans carte bancaire. On t\'envoie un lien magique par email.'
-              : 'On t\'envoie un lien magique par email. Pas de mot de passe à retenir.'}
+            {mode === 'signup'
+              ? '5 copies gratuites, sans carte bancaire.'
+              : 'Connecte-toi avec ton email et ton mot de passe.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {sent ? (
+          {resetSent ? (
             <div className="space-y-4 text-center">
               <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-900">
-                <p className="font-semibold mb-1">Lien envoyé ✉️</p>
-                <p>Vérifie ta boîte mail <strong>{email}</strong>. Le lien expire dans 1 heure.</p>
+                <p className="font-semibold mb-1">Email envoyé ✉️</p>
+                <p>Clique sur le lien dans l'email pour réinitialiser ton mot de passe.</p>
               </div>
-              <Button variant="outline" onClick={() => setSent(false)}>
-                Renvoyer un autre email
+              <Button variant="outline" onClick={() => { setResetSent(false); setMode('login'); }}>
+                Retour à la connexion
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleMagicLink} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email professionnel</Label>
                 <Input
@@ -99,10 +122,40 @@ export default function LoginForm() {
                   disabled={loading}
                   autoComplete="email"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Ton email n'est utilisé que pour t'identifier. Jamais partagé.
-                </p>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                />
+                {mode === 'signup' && (
+                  <p className="text-xs text-muted-foreground">Minimum 6 caractères.</p>
+                )}
+              </div>
+
+              {mode === 'signup' && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="new-password"
+                  />
+                </div>
+              )}
 
               {error && (
                 <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
@@ -111,23 +164,43 @@ export default function LoginForm() {
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Envoi en cours...' : isNew ? 'Créer mon compte →' : 'Recevoir mon lien magique →'}
+                {loading ? 'Chargement...' : mode === 'signup' ? 'Créer mon compte →' : 'Se connecter →'}
               </Button>
 
+              {mode === 'login' && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setResetSent(false)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                </div>
+              )}
+
               <p className="text-center text-sm text-muted-foreground">
-                {isNew ? (
+                {mode === 'signup' ? (
                   <>
                     Déjà un compte ?{' '}
-                    <Link href="/login" className="text-primary hover:underline font-medium">
+                    <button
+                      type="button"
+                      onClick={() => setMode('login')}
+                      className="text-primary hover:underline font-medium"
+                    >
                       Se connecter
-                    </Link>
+                    </button>
                   </>
                 ) : (
                   <>
                     Pas encore de compte ?{' '}
-                    <Link href="/signup" className="text-primary hover:underline font-medium">
-                      Créer un compte (10 copies gratuites)
-                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setMode('signup')}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Créer un compte (5 copies gratuites)
+                    </button>
                   </>
                 )}
               </p>
