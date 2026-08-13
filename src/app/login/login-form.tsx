@@ -46,14 +46,26 @@ export default function LoginForm() {
         return;
       }
 
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        setError(error.message);
-      } else if (data.session) {
-        router.push(plan ? `/app/billing?plan=${plan}` : '/app');
-        router.refresh();
+      // Server-side signup with email_confirm: true (no confirmation email needed)
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setError(result.error || 'Erreur lors de la création du compte.');
       } else {
-        setError('Compte créé. Vérifie tes emails pour confirmer ton adresse.');
+        // Auto-login after successful signup
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+        if (loginError) {
+          setError('Compte créé mais connexion échouée. Réessaie de te connecter.');
+        } else {
+          router.push(plan ? `/app/billing?plan=${plan}` : '/app');
+          router.refresh();
+        }
       }
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
