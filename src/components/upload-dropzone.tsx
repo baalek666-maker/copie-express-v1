@@ -193,7 +193,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-10 text-center transition-all cursor-pointer ${
+        className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors duration-200 ease-out cursor-pointer ${
           isDragging
             ? 'border-primary bg-primary/10 scale-[1.01]'
             : 'border-border hover:border-primary/50 hover:bg-secondary/30'
@@ -257,7 +257,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
             <div className="space-y-1.5">
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-300 ease-out"
+                  className="h-full bg-primary transition-colors duration-200 ease-out duration-300 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>

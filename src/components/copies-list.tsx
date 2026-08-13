@@ -125,7 +125,7 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
         return (
           <Card
             key={copy.id}
-            className={`transition-all hover:shadow-md animate-fade-in ${isValidated ? 'border-green-300 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800' : ''}`}
+            className={`transition-colors duration-200 ease-out hover:shadow-md animate-fade-in ${isValidated ? 'border-green-300 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800' : ''}`}
             style={{ animationDelay: `${idx * 40}ms` }}
           >
             <CardContent className="p-5">

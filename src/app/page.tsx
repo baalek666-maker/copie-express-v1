@@ -359,9 +359,9 @@ export default function HomePage() {
               const Icon = f.icon;
               return (
                 <FadeIn key={f.title} delay={idx * 60}>
-                  <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+                  <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-colors duration-200 ease-out duration-300 group">
                     <CardContent className="p-6 space-y-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-colors duration-200 ease-out">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
                       <h3 className="font-semibold text-lg">{f.title}</h3>

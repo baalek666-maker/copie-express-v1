@@ -163,7 +163,7 @@ export default async function UsagePage() {
                       </div>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-orange-500 transition-all"
+                          className="h-full bg-gradient-to-r from-primary to-orange-500 transition-colors duration-200 ease-out"
                           style={{ width: `${pct}%` }}
                         />
                       </div>

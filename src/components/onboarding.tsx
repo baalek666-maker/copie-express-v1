@@ -84,7 +84,7 @@ export function Onboarding() {
             {steps.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${
+                className={`h-1.5 rounded-full transition-colors duration-200 ease-out ${
                   i === step ? 'w-8 bg-primary' : 'w-1.5 bg-muted'
                 }`}
               />

@@ -112,7 +112,7 @@ export default async function AccountPage() {
                 </div>
                 <div className="h-2 bg-secondary rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-primary to-orange-500 transition-all"
+                    className="h-full bg-gradient-to-r from-primary to-orange-500 transition-colors duration-200 ease-out"
                     style={{ width: `${((userData?.trial_copies_count || 0) / 10) * 100}%` }}
                   />
                 </div>

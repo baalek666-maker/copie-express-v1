@@ -96,7 +96,7 @@ export default async function AppDashboardPage() {
                   </div>
                   <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-orange-500 transition-all"
+                      className="h-full bg-gradient-to-r from-primary to-orange-500 transition-colors duration-200 ease-out"
                       style={{ width: `${(trialProgress.used / trialProgress.max) * 100}%` }}
                     />
                   </div>
@@ -175,7 +175,7 @@ export default async function AppDashboardPage() {
                   className="block animate-fade-in"
                   style={{ animationDelay: `${idx * 50}ms` }}
                 >
-                  <Card className="hover:bg-secondary/30 hover:shadow-md transition-all cursor-pointer group">
+                  <Card className="hover:bg-secondary/30 hover:shadow-md transition-colors duration-200 ease-out cursor-pointer group">
                     <CardContent className="p-4 flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                         <FileText className="h-5 w-5 text-primary" />
@@ -188,7 +188,7 @@ export default async function AppDashboardPage() {
                         {total > 0 && (
                           <div className="mt-1.5 h-1 bg-secondary rounded-full overflow-hidden w-32">
                             <div
-                              className={`h-full transition-all ${isComplete ? 'bg-green-500' : 'bg-primary'}`}
+                              className={`h-full transition-colors duration-200 ease-out ${isComplete ? 'bg-green-500' : 'bg-primary'}`}
                               style={{ width: `${progress}%` }}
                             />
                           </div>

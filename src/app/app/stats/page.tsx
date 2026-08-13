@@ -255,7 +255,7 @@ export default function StatsDashboard() {
                               <span className="text-sm font-mono w-12">{s.avg_score}</span>
                               <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full transition-all duration-500 ${colorClass.split(' ')[0]}`}
+                                  className={`h-full rounded-full transition-colors duration-200 ease-out duration-500 ${colorClass.split(' ')[0]}`}
                                   style={{ width: `${Math.min(barWidth, 100)}%` }}
                                 />
                               </div>

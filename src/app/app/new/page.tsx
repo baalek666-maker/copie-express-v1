@@ -148,7 +148,7 @@ export default function NewEvaluationPage() {
                   <button
                     key={t.id}
                     onClick={() => useTemplate(t.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-background border hover:border-primary hover:bg-primary/5 transition-all text-sm"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-background border hover:border-primary hover:bg-primary/5 transition-colors duration-200 ease-out text-sm"
                   >
                     <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                     {t.title}
