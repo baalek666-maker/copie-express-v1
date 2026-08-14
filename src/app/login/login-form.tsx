@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetSent, setResetSent] = useState(false);
   const router = useRouter();
@@ -114,10 +113,14 @@ export default function LoginForm() {
     <main className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>{mode === 'signup' ? 'Créer mon compte' : 'Connexion'}</CardTitle>
+          <CardTitle>
+            {mode === 'signup' ? 'Créer mon compte' : mode === 'reset' ? 'Réinitialiser le mot de passe' : 'Connexion'}
+          </CardTitle>
           <CardDescription>
             {mode === 'signup'
               ? '5 copies gratuites, sans carte bancaire.'
+              : mode === 'reset'
+              ? 'On t\'envoie un lien par email pour réinitialiser ton mot de passe.'
               : 'Connecte-toi avec ton email et ton mot de passe.'}
           </CardDescription>
         </CardHeader>
@@ -132,6 +135,42 @@ export default function LoginForm() {
                 Retour à la connexion
               </Button>
             </div>
+          ) : mode === 'reset' ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email professionnel</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="prenom.nom@ac-xxx.fr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </div>
+
+              {error && (
+                <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Envoi en cours...' : 'Envoyer le lien →'}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className="text-primary hover:underline font-medium"
+                >
+                  ← Retour à la connexion
+                </button>
+              </p>
+            </form>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -195,7 +234,7 @@ export default function LoginForm() {
                 <div className="text-center">
                   <button
                     type="button"
-                    onClick={() => setResetSent(false)}
+                    onClick={() => setMode('reset')}
                     className="text-sm text-primary hover:underline"
                   >
                     Mot de passe oublié ?
