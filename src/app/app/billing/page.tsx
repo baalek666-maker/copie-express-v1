@@ -19,9 +19,10 @@ export default async function BillingPage({
 
   const plan = searchParams.plan;
   const planNames: Record<string, string> = {
-    monthly: 'Mensuel (10€/mois)',
+    monthly: 'Standard (15€/mois)',
     yearly: 'Annuel Standard (99€/an)',
-    expert: 'Expert Bac/Brevet (149€/an)',
+    petit: 'Petit Correcteur (5€/mois)',
+    expert_yearly: 'Expert Bac/Brevet (149€/an)',
   };
   const planLabel = plan && planNames[plan] ? planNames[plan] : 'Forfait';
 

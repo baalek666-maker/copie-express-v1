@@ -88,8 +88,8 @@ const testimonials = [
 
 const faqs = [
   {
-    q: 'Est-ce vraiment sans IA ?',
-    a: 'Le système fait de la reconnaissance d\'écriture pour extraire les réponses de tes copies. Tu gardes 100% du contrôle : tu valides ou corriges chaque note avant export. Aucune décision pédagogique n\'est automatisée.',
+    q: 'Comment ça marche sans scanner ?',
+    a: 'Le système fait de la reconnaissance d\'écriture dédiée pour extraire les réponses de tes copies. Tu gardes 100% du contrôle : tu valides ou corriges chaque note avant export. Aucune décision pédagogique n\'est automatisée.',
   },
   {
     q: 'Mes copies sont en sécurité ?',
@@ -457,7 +457,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing — kebab/machine à café */}
+      {/* Pricing — 4 forfaits réels */}
       <section className="px-6 py-20 bg-secondary/30 border-y">
         <div className="max-w-6xl mx-auto space-y-12">
           <FadeIn>
@@ -472,74 +472,94 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Mensuel */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Découverte */}
             <FadeIn delay={0}>
               <Card className="h-full">
                 <CardContent className="p-6 space-y-4">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Mensuel</div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Découverte</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">10€</span>
-                    <span className="text-muted-foreground">/mois</span>
+                    <span className="text-4xl font-bold">Gratuit</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Pour les profs qui veulent tester sans engagement.</p>
+                  <p className="text-sm text-muted-foreground">5 copies. Sans carte.</p>
                   <ul className="space-y-2 text-sm">
-                    {['Copies illimitées', 'Tous types d\'éval', 'Export SACoche / Pronote / Excel', 'Validation manuelle', 'Support email 7j/7'].map((f) => (
+                    {['5 copies offertes (one-shot)', 'Export CSV classique', 'Sans carte bancaire'].map((f) => (
                       <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
                     ))}
                   </ul>
                   <Button asChild variant="outline" size="lg" className="w-full">
-                    <Link href="/signup">Commencer</Link>
+                    <Link href="/signup">Créer mon compte</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
+
+            {/* Petit Correcteur */}
+            <FadeIn delay={100}>
+              <Card className="h-full">
+                <CardContent className="p-6 space-y-4">
+                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Petit Correcteur</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold">5€</span>
+                    <span className="text-muted-foreground">/mois</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Pour les profs qui démarrent. <strong>50 copies/mois</strong>.</p>
+                  <ul className="space-y-2 text-sm">
+                    {['50 copies / mois', 'Export SACoche + Pronote', 'Sans engagement'].map((f) => (
+                      <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
+                    ))}
+                  </ul>
+                  <Button asChild variant="outline" size="lg" className="w-full">
+                    <Link href="/signup?plan=petit">Choisir 5€ →</Link>
                   </Button>
                 </CardContent>
               </Card>
             </FadeIn>
 
             {/* Annuel — featured */}
-            <FadeIn delay={100}>
+            <FadeIn delay={200}>
               <Card className="h-full border-2 border-primary shadow-xl shadow-primary/10 relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground">⭐ Populaire</div>
                 <CardContent className="p-6 space-y-4">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-primary">Annuel</div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-primary">Standard</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">99€</span>
-                    <span className="text-muted-foreground">/an</span>
+                    <span className="text-4xl font-bold">15€</span>
+                    <span className="text-muted-foreground">/mois</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Économise 21€.<br /><strong className="text-foreground">Soit 0,27€/jour</strong> — moins qu'un café.
+                    <strong>500 copies/mois</strong> — l'essentiel pour un prof quotidien.
                   </p>
                   <ul className="space-y-2 text-sm">
-                    {['Tout de la formule mensuelle', 'Économies 21€/an', 'Accès prioritaire aux features', 'Détection multi-méthodes (maths/physique)', 'Support email prioritaire', 'Satisfait ou remboursé 30j'].map((f) => (
+                    {['500 copies / mois', 'Export SACoche + Pronote', 'Support prioritaire', 'Sans engagement'].map((f) => (
                       <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
                     ))}
                   </ul>
                   <Button asChild size="lg" className="w-full shadow-lg shadow-primary/20">
-                    <Link href="/signup?plan=annuel">Économiser 21€ →</Link>
+                    <Link href="/signup?plan=monthly">Choisir 15€ →</Link>
                   </Button>
                 </CardContent>
               </Card>
             </FadeIn>
 
-            {/* Expert */}
-            <FadeIn delay={200}>
-              <Card className="h-full border-green-300 bg-gradient-to-br from-green-50/50 to-white dark:from-green-950/20 dark:to-card">
+            {/* Annuel */}
+            <FadeIn delay={300}>
+              <Card className="h-full">
                 <CardContent className="p-6 space-y-4">
-                  <div className="inline-flex items-center gap-1 rounded-full bg-green-600 px-2 py-0.5 text-xs font-bold text-white">🚀 Liste d'attente</div>
-                  <div className="text-sm font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">Expert Bac/Brevet</div>
+                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Annuel</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">149€</span>
+                    <span className="text-4xl font-bold">99€</span>
                     <span className="text-muted-foreground">/an</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Pour les profs qui font passer le bac/brevet officiel.<br /><em>Disponible septembre 2026.</em>
+                    <strong>2 000 copies/mois</strong>. 2 mois offerts vs mensuel.
                   </p>
                   <ul className="space-y-2 text-sm">
-                    {['Tout de la formule annuelle', 'Analyse multi-méthodes avancée', 'Grilles personnalisées', 'Support téléphonique', 'Accès anticipé 1 mois'].map((f) => (
+                    {['2 000 copies / mois', 'Tout le Standard', '2 mois offerts (81€ d\'économie)', 'Stockage 30j RGPD'].map((f) => (
                       <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
                     ))}
                   </ul>
-                  <Button asChild variant="outline" size="lg" className="w-full border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400">
-                    <Link href="/app/billing?plan=expert">En savoir plus →</Link>
+                  <Button asChild variant="outline" size="lg" className="w-full">
+                    <Link href="/signup?plan=yearly">Économiser 21€ →</Link>
                   </Button>
                 </CardContent>
               </Card>
