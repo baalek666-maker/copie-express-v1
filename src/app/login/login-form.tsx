@@ -57,8 +57,20 @@ export default function LoginForm() {
 
       if (!res.ok) {
         setError(result.error || 'Erreur lors de la creation du compte.');
-      } else {
-        // Auto-login after successful signup
+      } else if (result.session?.access_token) {
+        // Set session directly from API response (instant login)
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token,
+        });
+        if (sessionError) {
+          setError('Session echouee. Reessaie de te connecter.');
+        } else {
+          router.push(plan ? `/app/billing?plan=${plan}` : '/app');
+          router.refresh();
+        }
+      } else if (result.needsManualLogin) {
+        // Fallback: try to sign in client-side
         const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
         if (loginError) {
           setError('Compte cree mais connexion echouee. Reessaie.');
