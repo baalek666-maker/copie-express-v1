@@ -3,6 +3,8 @@
 
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
@@ -98,7 +100,50 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+// === SÉCURITÉ : Helmet (headers HTTP de protection) ===
+app.use(helmet({
+  contentSecurityPolicy: false, // Next.js gère ses propres CSP headers
+  crossOriginEmbedderPolicy: false,
+}));
+
+// === SÉCURITÉ : Rate Limiting global ===
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // max 200 requêtes par IP en 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too_many_requests', hint: 'Réessaie dans 15 minutes.' },
+});
+app.use(globalLimiter);
+
+// Rate limiter plus strict pour l'auth et les endpoints sensibles
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // max 20 requêtes sur les endpoints auth
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too_many_requests', hint: 'Trop de tentatives. Réessaie dans 15 minutes.' },
+});
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/msword', // .doc
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+      'application/vnd.ms-powerpoint', // .ppt
+    ];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    cb(new Error('file_type_not_allowed'));
+  },
+});
 
 // CORS permissif pour le développement (Vercel + localhost)
 const allowedOrigins = [
@@ -112,7 +157,8 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(null, true); // Permissif en dev : on accepte tout
+    // Rejet explicite des origines non autorisées
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -183,7 +229,7 @@ app.get('/api/health', (req, res) => {
 
 // === UPLOAD BARÈME (optionnel, 1 fois par évaluation) ===
 // Upload une PHOTO du barème (ou PDF), OCR Mistral pour extraire le texte
-app.post('/api/grading-key', authMiddleware, upload.single('file'), requireUserMatch, async (req, res) => {
+app.post('/api/grading-key', authMiddleware, authLimiter, upload.single('file'), requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
   if (DEBUG) console.log('[GRADING-KEY] file:', req.file?.originalname);
   try {
@@ -248,7 +294,7 @@ app.post('/api/grading-key', authMiddleware, upload.single('file'), requireUserM
 });
 
 // === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
-app.post('/api/subject', authMiddleware, upload.single('file'), requireUserMatch, async (req, res) => {
+app.post('/api/subject', authMiddleware, authLimiter, upload.single('file'), requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
   if (DEBUG) console.log('[SUBJECT] file:', req.file?.originalname);
   try {
@@ -291,7 +337,7 @@ app.post('/api/subject', authMiddleware, upload.single('file'), requireUserMatch
 });
 
 // === UPLOAD ===
-app.post('/api/upload', authMiddleware, upload.array('files', 100), requireUserMatch, async (req, res) => {
+app.post('/api/upload', authMiddleware, authLimiter, upload.array('files', 100), requireUserMatch, async (req, res) => {
   try {
     const { evaluationId, userId } = req.body;
     const files = req.files;
@@ -317,7 +363,7 @@ app.post('/api/upload', authMiddleware, upload.array('files', 100), requireUserM
 });
 
 // === EXTRACT (Mistral OCR + LLM) ===
-app.post('/api/extract', authMiddleware, requireUserMatch, async (req, res) => {
+app.post('/api/extract', authMiddleware, authLimiter, requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
   const { evaluationId, copyId, userId } = req.body;
   if (!evaluationId || !copyId || !userId) {
@@ -519,23 +565,33 @@ JSON STRICT (rien d'autre) :
 
 // === EXPORT CSV (SACoche / Pronote) ===
 // POST (JSON body) — utilisé par le frontend moderne
-app.post('/api/export', async (req, res) => {
+app.post('/api/export', authMiddleware, authLimiter, async (req, res) => {
   const { evaluationId, format } = req.body;
-  await handleExport(res, evaluationId, format);
+  await handleExport(res, evaluationId, format, req.user.id);
 });
 
 // GET (query params) — utilisé par les liens directs <a href>
-app.get('/api/export', async (req, res) => {
+app.get('/api/export', authMiddleware, authLimiter, async (req, res) => {
   const { evaluationId, format } = req.query;
-  await handleExport(res, evaluationId, format);
+  await handleExport(res, evaluationId, format, req.user.id);
 });
 
-async function handleExport(res, evaluationId, format) {
+async function handleExport(res, evaluationId, format, userId) {
   try {
     if (!evaluationId || !format) return res.status(400).json({ error: 'missing_params' });
     if (!['sacoche', 'pronote'].includes(format)) {
       return res.status(400).json({ error: 'invalid_format' });
     }
+
+    // Vérification de propriété : l'évaluation doit appartenir à l'utilisateur
+    const { data: evaluation } = await supabase
+      .from('evaluations')
+      .select('grading_scale, correct_answers, title, user_id')
+      .eq('id', evaluationId)
+      .single();
+
+    if (!evaluation) return res.status(404).json({ error: 'evaluation_not_found' });
+    if (evaluation.user_id !== userId) return res.status(403).json({ error: 'forbidden', hint: 'Not your evaluation' });
 
     const { data: copies, error } = await supabase
       .from('copies')
@@ -545,15 +601,6 @@ async function handleExport(res, evaluationId, format) {
 
     if (error) throw error;
     if (!copies?.length) return res.status(404).json({ error: 'no_validated_copies' });
-
-    // Récupération évaluation + barème
-    const { data: evaluation } = await supabase
-      .from('evaluations')
-      .select('grading_scale, correct_answers, title')
-      .eq('id', evaluationId)
-      .single();
-
-    if (!evaluation) return res.status(404).json({ error: 'evaluation_not_found' });
 
     const scale = evaluation.grading_scale || [];
     const correctAnswers = evaluation.correct_answers || {};
