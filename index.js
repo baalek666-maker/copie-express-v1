@@ -157,8 +157,11 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Rejet explicite des origines non autorisées
-    return callback(new Error('Not allowed by CORS'));
+    // Rejet propre : renvoie 403 avec un message JSON
+    if (origin) {
+      return callback(null, false); // false = origine rejetée → le middleware cors renvoie 403
+    }
+    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
