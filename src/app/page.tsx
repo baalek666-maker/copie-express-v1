@@ -149,11 +149,14 @@ export default function HomePage() {
           </Link>
           <nav className="flex items-center gap-2">
             <Link href="/why-us" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
-              Pourquoi nous
-            </Link>
-            <Link href="/pricing" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
-              Tarifs
-            </Link>
+                            Pourquoi nous
+                          </Link>
+                          <Link href="/pricing" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+                            Tarifs
+                          </Link>
+                          <Link href="/blog" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+                            Blog
+                          </Link>
             <Button asChild variant="ghost">
               <Link href="/login">Connexion</Link>
             </Button>
