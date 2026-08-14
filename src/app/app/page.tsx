@@ -141,12 +141,14 @@ export default async function AppDashboardPage() {
                   Crée ta première évaluation. Upload tes copies. Valide en 30 secondes par copie.
                 </p>
               </div>
-              <Button asChild size="lg" className="shadow-lg shadow-primary/20">
-                <Link href="/app/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Créer ma première évaluation
-                </Link>
-              </Button>
+              <div className="flex justify-center">
+                <Button asChild size="lg" className="shadow-lg shadow-primary/20">
+                  <Link href="/app/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer ma première évaluation
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </FadeIn>
