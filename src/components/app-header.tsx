@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, BarChart3, Plus, Menu, X, TrendingUp } from 'lucide-react';
+import { LogOut, User, BarChart3, Plus, Menu, X, TrendingUp, Gift } from 'lucide-react';
 import { useEffect } from 'react';
 
 export function AppHeader() {
@@ -37,6 +37,7 @@ export function AppHeader() {
         { href: '/app/new', label: 'Nouvelle', icon: Plus },
         { href: '/app/usage', label: 'Usage', icon: BarChart3 },
         { href: '/app/account', label: 'Compte', icon: User },
+        { href: '/app/referral', label: 'Parrainage', icon: Gift },
       ]
     : [];
 

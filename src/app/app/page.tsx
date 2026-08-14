@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { EmptyEvaluationsIllustration } from '@/components/illustrations';
 import { FadeIn } from '@/components/fade-in';
-import { Plus, FileText, Clock, CheckCircle2, Zap, TrendingUp, ArrowRight } from 'lucide-react';
+import { Plus, FileText, Clock, CheckCircle2, Zap, TrendingUp, ArrowRight, Gift } from 'lucide-react';
+import { OnboardingWizard } from '@/components/onboarding-wizard';
 
 export const dynamic = 'force-dynamic';
 
@@ -217,6 +218,7 @@ export default async function AppDashboardPage() {
           </div>
         </FadeIn>
       )}
+      <OnboardingWizard />
     </div>
   );
 }
