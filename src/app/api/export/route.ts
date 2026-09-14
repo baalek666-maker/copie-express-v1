@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   // Proxy vers Express backend — le backend retourne directement le CSV
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://london-cups-ipod-bowling.trycloudflare.com';
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
   const response = await fetch(`${backendUrl}/api/export`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

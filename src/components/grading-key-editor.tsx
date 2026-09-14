@@ -32,7 +32,7 @@ export function GradingKeyEditor({
       formData.append('evaluationId', evaluationId);
       formData.append('userId', user.id);
 
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://london-cups-ipod-bowling.trycloudflare.com';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
       if (!accessToken) throw new Error('Session expirée — reconnecte-toi');
