@@ -89,7 +89,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       formData.append('evaluationId', evaluationId);
       formData.append('userId', user.id);
 
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://copie-express-v1-production.up.railway.app';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://london-cups-ipod-bowling.trycloudflare.com';
       // Récupère le token JWT pour l'auth middleware backend
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
