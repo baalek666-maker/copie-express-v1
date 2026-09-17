@@ -98,7 +98,7 @@ export default function LoginForm() {
 
     const supabase = createBrowserSupabase();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
     });
 
     if (error) {
