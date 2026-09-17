@@ -296,6 +296,157 @@ app.post('/api/grading-key', authMiddleware, authLimiter, upload.single('file'),
   }
 });
 
+// === PUT /api/bareme-auto : enregistre les ajustements du prof ===
+app.put('/api/bareme-auto', authMiddleware, authLimiter, requireUserMatch, async (req, res) => {
+  try {
+    const { evaluationId, userId, questions } = req.body;
+    if (!evaluationId || !userId || !Array.isArray(questions) || !questions.length) {
+      return res.status(400).json({ error: 'missing_params' });
+    }
+
+    const { data: evaluation, error: evalError } = await supabase
+      .from('evaluations')
+      .select('id, user_id')
+      .eq('id', evaluationId)
+      .eq('user_id', userId)
+      .single();
+    if (evalError || !evaluation) return res.status(404).json({ error: 'evaluation_not_found' });
+
+    const cleaned = questions.slice(0, 100).map((q, i) => ({
+      id: String(q.id || (i + 1)),
+      label: String(q.label || `Question ${i + 1}`).slice(0, 300),
+      expected: String(q.expected || '').slice(0, 1000),
+      points: Math.min(10, Math.max(0.5, Number(q.points) || 1)),
+      skill: String(q.skill || '').slice(0, 200),
+    }));
+
+    const gradingScale = cleaned.map(q => ({ id: q.id, label: q.label, max_points: q.points, skill: q.skill }));
+    const correctAnswers = {};
+    for (const q of cleaned) correctAnswers[q.id] = q.expected;
+    const gradingKeyText = cleaned
+      .map(q => `Q${q.id} (${q.points} pts${q.skill ? ` — ${q.skill}` : ''}) : ${q.expected}`)
+      .join('\n');
+
+    await supabase.from('evaluations').update({
+      grading_scale: gradingScale,
+      correct_answers: correctAnswers,
+      grading_key: gradingKeyText,
+    }).eq('id', evaluationId);
+
+    res.json({ success: true, total_points: cleaned.reduce((s, q) => s + q.points, 0) });
+  } catch (err) {
+    console.error('bareme-auto PUT error:', err);
+    res.status(500).json({ error: 'bareme_auto_save_failed', details: err.message });
+  }
+});
+
+// === BARÈME AUTO (généré depuis le sujet uploadé) ===
+// POST /api/bareme-auto {evaluationId, userId}
+// OCR le sujet → Mistral génère un barème structuré → stocké dans
+// grading_scale + correct_answers + grading_key (texte, réutilisé par /api/extract)
+app.post('/api/bareme-auto', authMiddleware, authLimiter, requireUserMatch, async (req, res) => {
+  const DEBUG = process.env.NODE_ENV !== 'production';
+  try {
+    const { evaluationId, userId } = req.body;
+    if (!evaluationId || !userId) return res.status(400).json({ error: 'missing_params' });
+
+    const { data: evaluation, error: evalError } = await supabase
+      .from('evaluations')
+      .select('id, user_id, title, subject, class_level, subject_storage_path')
+      .eq('id', evaluationId)
+      .eq('user_id', userId)
+      .single();
+
+    if (evalError || !evaluation) return res.status(404).json({ error: 'evaluation_not_found' });
+    if (!evaluation.subject_storage_path) {
+      return res.status(400).json({ error: 'no_subject', hint: 'Upload le sujet avant de générer le barème' });
+    }
+
+    // OCR du sujet (une seule fois — résultat non caché, mais l'opération est rapide)
+    const { data: subjectSigned } = await supabase.storage
+      .from('copies')
+      .createSignedUrl(evaluation.subject_storage_path, 120);
+    if (!subjectSigned?.signedUrl) return res.status(500).json({ error: 'signed_url_failed' });
+
+    const subjectText = await mistralOcr(subjectSigned.signedUrl);
+    if (!subjectText.trim()) return res.status(422).json({ error: 'subject_unreadable', hint: 'OCR vide' });
+
+    // Génération du barème
+    const bareme = await mistralChat([
+      {
+        role: 'system',
+        content: 'Tu es un professeur français expert en évaluation. Tu retournes UNIQUEMENT du JSON valide.',
+      },
+      {
+        role: 'user',
+        content: `Tu es un professeur qui prépare la correction d'une évaluation.
+
+SUJET DU CONTRÔLE (OCR) :
+"""
+${subjectText}
+"""
+
+CONTEXTE : matière = ${evaluation.subject || 'non précisée'}, niveau = ${evaluation.class_level || 'non précisé'}.
+
+TÂCHE : construis le BARÈME de correction complet de ce sujet.
+1. Liste CHAQUE question / exercice numéroté du sujet (même les sous-questions : 1a, 1b...)
+2. Pour chaque question : la réponse attendue PRÉCISE, le nombre de points, et le savoir-faire évalué
+3. Répartis les points pour un total rond (20 par défaut, sinon le total naturel du sujet)
+4. Si une question est ouverte (rédaction, dissertation), mets "réponse ouverte" et des critères
+
+JSON STRICT (rien d'autre) :
+{
+  "questions": [
+    { "id": "1", "label": "intitulé court de la question", "expected": "réponse attendue précise", "points": 2, "skill": "savoir-faire évalué" }
+  ],
+  "total_points": 20,
+  "comment": "remarque courte pour le prof (max 1 phrase)"
+}`,
+      },
+    ], true);
+
+    if (!bareme?.questions?.length) {
+      return res.status(422).json({ error: 'bareme_generation_failed', hint: 'Le modèle n\'a pas produit de barème exploitable' });
+    }
+
+    // Normalisation + plafonnement (sécurité : max 100 questions, points 0.5-10)
+    const questions = bareme.questions.slice(0, 100).map((q, i) => ({
+      id: String(q.id || (i + 1)),
+      label: String(q.label || `Question ${i + 1}`).slice(0, 300),
+      expected: String(q.expected || '').slice(0, 1000),
+      points: Math.min(10, Math.max(0.5, Number(q.points) || 1)),
+      skill: String(q.skill || '').slice(0, 200),
+    }));
+
+    const gradingScale = questions.map(q => ({ id: q.id, label: q.label, max_points: q.points, skill: q.skill }));
+    const correctAnswers = {};
+    for (const q of questions) correctAnswers[q.id] = q.expected;
+
+    // Version texte pour /api/extract (MODE AVEC BARÈME — flux existant, zéro changement)
+    const gradingKeyText = questions
+      .map(q => `Q${q.id} (${q.points} pts${q.skill ? ` — ${q.skill}` : ''}) : ${q.expected}`)
+      .join('\n');
+
+    await supabase.from('evaluations').update({
+      grading_scale: gradingScale,
+      correct_answers: correctAnswers,
+      grading_key: gradingKeyText,
+      // Témoin "déjà généré" = correct_answers non-null (colonne existante, pas de migration)
+    }).eq('id', evaluationId);
+
+    if (DEBUG) console.log('[BAREME-AUTO] OK:', questions.length, 'questions');
+    res.json({
+      success: true,
+      questions,
+      total_points: questions.reduce((s, q) => s + q.points, 0),
+      comment: bareme.comment || null,
+    });
+  } catch (err) {
+    console.error('bareme-auto error:', err);
+    res.status(500).json({ error: 'bareme_auto_failed', details: err.message });
+  }
+});
+
 // === UPLOAD SUJET (optionnel, 1 fois par évaluation) ===
 app.post('/api/subject', authMiddleware, authLimiter, upload.single('file'), requireUserMatch, async (req, res) => {
   const DEBUG = process.env.NODE_ENV !== 'production';
@@ -468,6 +619,11 @@ TÂCHE :
 6. Si l'élève n'a pas répondu ou a écrit "?" / "je sais pas" → false
 7. Si illisible → "unclear" + false
 
+Pour chaque réponse FAUSSE, classifie l'erreur dans "error_type" (catégorie pédagogique) :
+- "calcul" (erreur de calcul), "concept" (notion non comprise), "lecture" (mauvaise lecture de l'énoncé),
+- "inattention" ( étourderie, oubli d'unité, signe inversé), "incomplet" (réponse partielle),
+- "absence" (pas de réponse), "autre"
+
 JSON STRICT (rien d'autre) :
 {
   "student_identifier": "eleve_001" | null,
@@ -477,6 +633,7 @@ JSON STRICT (rien d'autre) :
       "student_wrote": "4" | null,
       "expected": "4",
       "is_correct": true | false,
+      "error_type": "calcul" | "concept" | ... | null,
       "confidence": 0.0-1.0
     },
     ...
@@ -505,6 +662,7 @@ TÂCHE :
 6. Si l'élève n'a pas répondu ou a écrit "?" / "je sais pas" → false
 7. Si illisible → "unclear" + false
 8. Pour les calculs mathématiques, vérifie le résultat numérique
+9. Pour chaque réponse FAUSSE, classe l'erreur dans "error_type" : "calcul", "concept" (notion non comprise), "lecture" (énoncé mal lu), "inattention" (étourderie, unité oubliée, signe), "incomplet" (partiel), "absence" (pas de réponse), ou "autre"
 
 JSON STRICT (rien d'autre) :
 {
@@ -516,6 +674,7 @@ JSON STRICT (rien d'autre) :
       "student_wrote": "5" | null,
       "expected": "4",
       "is_correct": true | false,
+      "error_type": "calcul" | "concept" | ... | null,
       "confidence": 0.0-1.0
     },
     ...

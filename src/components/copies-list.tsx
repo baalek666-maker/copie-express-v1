@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Edit3, Loader2, FileText } from 'lucide-react';
 import { PhotoViewer } from './photo-viewer';
 import { ConfidenceBadge } from './confidence-badge';
+import { ErrorTypeBadges, countErrorTypes, countErrorTypesAll } from './error-types';
 import { toast } from 'sonner';
 
 interface Copy {
@@ -82,6 +83,24 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
     <div className="space-y-3">
       {showConfetti && <Celebration />}
 
+      {/* Résumé des erreurs de la classe (feature catégories 16/09) */}
+      {(() => {
+        const classErrors = countErrorTypesAll(copies);
+        const total = Object.values(classErrors).reduce((s, n) => s + n, 0);
+        if (total < 3) return null;
+        return (
+          <div className="p-3 rounded-lg bg-secondary/50 border flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-medium">🧭 Erreurs récurrentes de la classe</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {total} erreurs classées sur l'ensemble des copies — piste directe de remédiation.
+              </p>
+            </div>
+            <ErrorTypeBadges counts={classErrors} max={5} />
+          </div>
+        );
+      })()}
+
       {/* Bulk validate all pending copies */}
       {copies.filter((c) => c.status === 'ready_to_validate' && !c.validated_by_user).length > 1 && (
         <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border">
@@ -148,6 +167,9 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
                         <span className="text-blue-700 font-medium">
                           📊 Note proposée : {copy.proposed_score} / {copy.proposed_max_score} pts
                         </span>
+                      )}
+                      {!isValidated && (copy.status === 'ready_to_validate' || copy.status === 'validated') && (
+                        <ErrorTypeBadges counts={countErrorTypes(copy.extracted_answers)} max={3} />
                       )}
                       {!isValidated && copy.confidence_score !== null && (
                         <ConfidenceBadge confidence={copy.confidence_score} />

@@ -16,6 +16,7 @@ import {
   Shield,
   FileText,
   Heart,
+  Sparkles,
   ArrowRight,
   Star,
   HelpCircle,
@@ -46,6 +47,11 @@ const features = [
     icon: FileText,
     title: 'Compatible SACoche & Pronote',
     desc: 'CSV au bon format. Tu importes en 2 clics.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Barème automatique',
+    desc: 'Upload ton sujet : questions, points et savoir-faire extraits en 1 clic.',
   },
   {
     icon: Heart,

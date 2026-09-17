@@ -12,6 +12,7 @@ import { UploadDropzone } from '@/components/upload-dropzone';
 import { CopiesList } from '@/components/copies-list';
 import { SubjectUploader } from '@/components/subject-uploader';
 import { GradingKeyEditor } from '@/components/grading-key-editor';
+import { BaremeAuto } from '@/components/bareme-auto';
 import { PhotoTips } from '@/components/photo-tips';
 import { FadeIn } from '@/components/fade-in';
 
@@ -144,6 +145,12 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
         <SubjectUploader
           evaluationId={params.id}
           existingSubjectPath={evaluation.subject_storage_path}
+        />
+
+        <BaremeAuto
+          evaluationId={params.id}
+          hasSubject={!!evaluation.subject_storage_path}
+          alreadyGenerated={!!evaluation.correct_answers}
         />
 
         <GradingKeyEditor
