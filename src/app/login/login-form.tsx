@@ -16,6 +16,11 @@ export default function LoginForm() {
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  // Mode recovery : lien de réinitialisation détecté dans l'URL (code ou hash)
+  const [recoveryReady, setRecoveryReady] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newConfirm, setNewConfirm] = useState('');
+  const [recoveryDone, setRecoveryDone] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -25,6 +30,63 @@ export default function LoginForm() {
   useEffect(() => {
     if (isNew) setMode('signup');
   }, [isNew]);
+
+  // Détection du lien de réinitialisation (query ?code= ou hash type=recovery),
+  // quel que soit l'endroit où le mail atterrit.
+  useEffect(() => {
+    const supabase = createBrowserSupabase();
+    let cancelled = false;
+
+    (async () => {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+      const hash = url.hash || '';
+      const isRecovery =
+        hash.includes('type=recovery') || url.searchParams.get('type') === 'recovery';
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        if (!cancelled && !error) setRecoveryReady(true);
+        return;
+      }
+      if (isRecovery) {
+        const { data } = await supabase.auth.getSession();
+        if (!cancelled && data.session) setRecoveryReady(true);
+      }
+    })();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setRecoveryReady(true);
+    });
+
+    return () => { cancelled = true; subscription.unsubscribe(); };
+  }, []);
+
+  const handleNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (newPassword !== newConfirm) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Le mot de passe doit faire au moins 6 caractères.');
+      return;
+    }
+    setLoading(true);
+    const supabase = createBrowserSupabase();
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    setLoading(false);
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+    setRecoveryDone(true);
+    setTimeout(() => {
+      router.push('/app');
+      router.refresh();
+    }, 1500);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,7 +176,9 @@ export default function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>
-            {mode === 'signup' ? 'Créer mon compte' : mode === 'reset' ? 'Réinitialiser le mot de passe' : 'Connexion'}
+            {recoveryReady
+              ? 'Nouveau mot de passe'
+              : mode === 'signup' ? 'Créer mon compte' : mode === 'reset' ? 'Réinitialiser le mot de passe' : 'Connexion'}
           </CardTitle>
           <CardDescription>
             {mode === 'signup'
@@ -125,7 +189,54 @@ export default function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {resetSent ? (
+          {recoveryDone ? (
+            <div className="space-y-4 text-center">
+              <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-900">
+                <p className="font-semibold mb-1">Mot de passe mis à jour ✓</p>
+                <p>Redirection vers ton espace…</p>
+              </div>
+            </div>
+          ) : recoveryReady ? (
+            <form onSubmit={handleNewPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  disabled={loading}
+                  autoComplete="new-password"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-confirm">Confirmer le nouveau mot de passe</Label>
+                <Input
+                  id="new-confirm"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newConfirm}
+                  onChange={(e) => setNewConfirm(e.target.value)}
+                  required
+                  minLength={6}
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+  </div>
+              {error && (
+                <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Enregistrement…' : 'Définir mon nouveau mot de passe'}
+              </Button>
+            </form>
+          ) : resetSent ? (
             <div className="space-y-4 text-center">
               <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-900">
                 <p className="font-semibold mb-1">Email envoyé ✉️</p>
