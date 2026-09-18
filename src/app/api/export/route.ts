@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   // Proxy vers Express backend — le backend retourne directement le CSV
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
+  const backendUrl = getBackendUrl();
   const response = await fetch(`${backendUrl}/api/export`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

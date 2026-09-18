@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Download, FileText } from 'lucide-react';
 import { UploadDropzone } from '@/components/upload-dropzone';
+import { DeleteEvaluationButton } from '@/components/delete-evaluation-button';
 import { CopiesList } from '@/components/copies-list';
 import { SubjectUploader } from '@/components/subject-uploader';
 import { GradingKeyEditor } from '@/components/grading-key-editor';
@@ -61,7 +62,7 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
               {evaluation.subject} · {evaluation.class_level} · {evaluation.total_copies} copies prévues
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             {validatedCount > 0 && (
               <>
                 <Button variant="outline" asChild>
@@ -78,6 +79,7 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
                 </Button>
               </>
             )}
+            <DeleteEvaluationButton evaluationId={params.id} />
           </div>
         </div>
       </FadeIn>

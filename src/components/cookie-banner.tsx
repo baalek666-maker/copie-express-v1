@@ -13,8 +13,9 @@ export function CookieBanner() {
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
-      // Petit délai pour ne pas agresser à l'atterrissage
-      const timer = setTimeout(() => setShow(true), 1500);
+      // Délai long : la modale n'apparaît jamais pendant la première intention de clic
+      // (login, CTA) — elle ne doit pas avaler le premier submit.
+      const timer = setTimeout(() => setShow(true), 4500);
       return () => clearTimeout(timer);
     }
   }, []);

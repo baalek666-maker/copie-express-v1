@@ -6,6 +6,7 @@ import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, CheckCircle2, Edit3, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export function SubjectUploader({
   evaluationId,
@@ -34,7 +35,7 @@ export function SubjectUploader({
       formData.append('evaluationId', evaluationId);
       formData.append('userId', user.id);
 
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
+      const backendUrl = getBackendUrl();
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
       if (!accessToken) throw new Error('Session expirée — reconnecte-toi');

@@ -33,7 +33,7 @@ export default function PricingPage() {
           'Sans engagement',
         ],
         cta: 'Choisir 5€',
-        ctaLink: '/login?plan=petit',
+        ctaLink: '/api/upgrade?plan=petit',
         variant: 'outline' as const,
       },
       {
@@ -49,7 +49,7 @@ export default function PricingPage() {
           'Sans engagement',
         ],
         cta: 'Choisir Standard',
-        ctaLink: '/login?plan=monthly',
+        ctaLink: '/api/upgrade?plan=monthly',
         variant: 'outline' as const,
       },
       {
@@ -66,7 +66,7 @@ export default function PricingPage() {
           'Économise 81€ vs mensuel',
         ],
         cta: 'Choisir Annuel',
-        ctaLink: '/login?plan=yearly',
+        ctaLink: '/api/upgrade?plan=yearly',
         variant: 'default' as const,
         highlight: true,
       },

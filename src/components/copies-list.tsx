@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getBackendUrl } from '@/lib/backend-url';
 import { CheckCircle2, Edit3, Loader2, FileText } from 'lucide-react';
 import { PhotoViewer } from './photo-viewer';
 import { ConfidenceBadge } from './confidence-badge';
@@ -30,6 +31,7 @@ interface Copy {
   proposed_score?: number | null;
   proposed_max_score?: number | null;
   validated_at?: string | null;
+  created_at?: string | null;
 }
 
 interface Question {
@@ -46,6 +48,7 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
 }) {
   const [editingCopy, setEditingCopy] = useState<Copy | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createBrowserSupabase();
 
@@ -143,6 +146,34 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
         const isValidated = copy.validated_by_user;
         const isReady = copy.status === 'ready_to_validate';
         const isPending = copy.status === 'pending' || copy.status === 'processing';
+        // Extraction bloquée : pending depuis plus de 2 min = échec silencieux probable
+        const isStuck = copy.status === 'pending' && copy.created_at
+          && (Date.now() - new Date(copy.created_at).getTime()) > 2 * 60 * 1000;
+
+        const retryExtraction = async () => {
+          setRetryingId(copy.id);
+          try {
+            const supabase = createBrowserSupabase();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Non connecté');
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`${getBackendUrl()}/api/extract`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token}`,
+              },
+              body: JSON.stringify({ evaluationId, copyId: copy.id, userId: user.id }),
+            });
+            if (!res.ok) throw new Error(`Erreur ${res.status}`);
+            toast.success('Extraction relancée — patiente quelques secondes');
+            router.refresh();
+          } catch (e: any) {
+            toast.error(e.message || 'Relance impossible');
+          } finally {
+            setRetryingId(null);
+          }
+        };
 
         return (
           <Card
@@ -177,10 +208,22 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
                       {!isValidated && copy.confidence_score !== null && (
                         <ConfidenceBadge confidence={copy.confidence_score} />
                       )}
-                      {isPending && (
+                      {isPending && !isStuck && (
                         <span className="flex items-center gap-1 text-amber-600">
                           <Loader2 className="h-3 w-3 animate-spin" />
                           Extraction en cours...
+                        </span>
+                      )}
+                      {isStuck && (
+                        <span className="flex items-center gap-2 text-destructive">
+                          Extraction interrompue
+                          <button
+                            onClick={retryExtraction}
+                            disabled={retryingId === copy.id}
+                            className="underline underline-offset-2 hover:text-foreground font-medium disabled:opacity-50"
+                          >
+                            {retryingId === copy.id ? 'Relance…' : 'Relancer'}
+                          </button>
                         </span>
                       )}
                       {isReady && copy.proposed_score === null && (

@@ -27,6 +27,21 @@ export default function LoginForm() {
   const isNew = searchParams.get('new') === '1';
   const plan = searchParams.get('plan');
 
+  // Session déjà active → pas de formulaire de connexion : on va directement
+  // au forfait demandé ou à l'app (évite le piège « re-login » d'un prof connecté).
+  useEffect(() => {
+    if (mode !== 'login') return;
+    const supabase = createBrowserSupabase();
+    let cancelled = false;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!cancelled && session) {
+        router.push(plan ? `/app/billing?plan=${encodeURIComponent(plan)}` : '/app');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [mode, plan, router]);
+
   useEffect(() => {
     if (isNew) setMode('signup');
   }, [isNew]);

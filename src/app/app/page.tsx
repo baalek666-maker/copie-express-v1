@@ -123,7 +123,7 @@ export default async function AppDashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground">
-                Suppression auto 30j (RGPD)
+                Supprimées sous 30 jours (RGPD)
               </p>
             </CardContent>
           </Card>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, Wand2, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { getBackendUrl } from '@/lib/backend-url';
 
 type BaremeQuestion = {
   id: string;
@@ -42,7 +43,7 @@ export function BaremeAuto({
       if (!user) throw new Error('Non connecté');
 
       const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
+      const backendUrl = getBackendUrl();
       const response = await fetch(`${backendUrl}/api/bareme-auto`, {
         method: 'POST',
         headers: {
@@ -74,7 +75,7 @@ export function BaremeAuto({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non connecté');
       const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
+      const backendUrl = getBackendUrl();
       const response = await fetch(`${backendUrl}/api/bareme-auto`, {
         method: 'PUT',
         headers: {
@@ -112,7 +113,7 @@ export function BaremeAuto({
           <CardTitle className="flex items-center justify-between text-base">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Barème automatique généré
+              Barème express généré
             </span>
             <Button size="sm" variant="outline" onClick={generate} disabled={loading}>
               <Wand2 className="h-3 w-3 mr-1" />
@@ -132,7 +133,7 @@ export function BaremeAuto({
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          Barème automatique <span className="text-sm font-normal text-muted-foreground">(nouveau)</span>
+          Barème express <span className="text-sm font-normal text-muted-foreground">(nouveau)</span>
         </CardTitle>
         <CardDescription>
           {hasSubject

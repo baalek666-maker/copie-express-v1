@@ -52,7 +52,7 @@ export function DashboardMockup() {
               <FileText className="h-2.5 w-2.5" /> Copies traitées
             </p>
             <p className="text-base font-bold">47</p>
-            <p className="text-[9px] text-muted-foreground">Suppression auto 30j</p>
+            <p className="text-[9px] text-muted-foreground">Supprimées sous 30j</p>
           </div>
         </div>
 

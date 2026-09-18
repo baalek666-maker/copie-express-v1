@@ -8,6 +8,7 @@ import { translateError } from '@/lib/error-translator';
 import { Button } from '@/components/ui/button';
 import { Upload, X, Loader2, ImageIcon, FileText, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
   const [files, setFiles] = useState<File[]>([]);
@@ -89,7 +90,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       formData.append('evaluationId', evaluationId);
       formData.append('userId', user.id);
 
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://configuring-are-manga-granny.trycloudflare.com';
+      const backendUrl = getBackendUrl();
       // Récupère le token JWT pour l'auth middleware backend
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
@@ -128,6 +129,7 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       // Lance l'extraction en arrière-plan, attend chaque copie
       setProgress(60);
       setProgressLabel('Extraction des réponses…');
+      let failedExtracts = 0;
 
       if (result.paths.length > 0) {
         const { data: firstCopies } = await supabase
@@ -153,9 +155,13 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
                   },
                   body: JSON.stringify({ evaluationId, copyId, userId: user.id }),
                 });
-                if (!extractRes.ok) console.error('[extract] failed for copy:', copyId);
+                if (!extractRes.ok) {
+                  console.error('[extract] failed for copy:', copyId);
+                  failedExtracts++;
+                }
               } catch (err) {
                 console.error('[extract] error', err);
+                failedExtracts++;
               }
             })
           );
@@ -166,9 +172,15 @@ export function UploadDropzone({ evaluationId }: { evaluationId: string }) {
       setProgress(100);
       setProgressLabel('Terminé ✓');
 
-      toast.success(`${files.length} copie(s) traitée(s) ✓`, {
-        description: 'Vérifie les résultats ci-dessous.',
-      });
+      if (failedExtracts > 0) {
+        toast.warning(`${files.length - failedExtracts} copie(s) traitée(s) — ${failedExtracts} en échec`, {
+          description: 'Réessaie depuis la liste : bouton « Relancer » sur les copies en échec.',
+        });
+      } else {
+        toast.success(`${files.length} copie(s) traitée(s) ✓`, {
+          description: 'Vérifie les résultats ci-dessous.',
+        });
+      }
 
       setFiles([]);
       setTimeout(() => {
