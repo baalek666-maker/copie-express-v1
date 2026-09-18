@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+// Reveal au scroll (fade + rise) : le bloc apparaît quand il entre dans le viewport.
+// Utilisé sur tous les blocs de la landing — aucun autre réglage nécessaire.
+// Respecte prefers-reduced-motion et reste visible si IntersectionObserver manque.
 export function FadeIn({
   children,
   delay = 0,
@@ -11,18 +14,39 @@ export function FadeIn({
   delay?: number;
   className?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(t);
+    const el = ref.current;
+    if (!el) return;
+
+    // Fallback : navigateur sans IntersectionObserver → visible tout de suite
+    if (!('IntersectionObserver' in window)) {
+      setVisible(true);
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setTimeout(() => setVisible(true), delay);
+            io.disconnect();
+            return;
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, [delay]);
 
   return (
     <div
-      className={`transition-colors duration-200 ease-out duration-500 ease-out ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-      } ${className}`}
+      ref={ref}
+      className={`reveal-rise ${visible ? 'revealed' : ''} ${className}`}
     >
       {children}
     </div>
