@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FadeIn } from '@/components/fade-in';
 import { SmoothScroll } from '@/components/smooth-scroll';
+import { CountUp } from '@/components/count-up';
 import { LeadCapture } from '@/components/lead-capture';
 import {
   DashboardMockup,
@@ -248,15 +249,15 @@ export default function HomePage() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary">350 000</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary"><CountUp end={350000} /></div>
                 <div className="text-xs text-muted-foreground mt-1">profs en France qui passent 3h à saisir</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary">90×</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary"><CountUp end={90} suffix="×" /></div>
                 <div className="text-xs text-muted-foreground mt-1">plus rapide qu'une saisie manuelle</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary">99,2%</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary"><CountUp end={99.2} decimals={1} suffix="%" /></div>
                 <div className="text-xs text-muted-foreground mt-1">de fiabilité sur 1 000 copies testées</div>
               </div>
             </div>
