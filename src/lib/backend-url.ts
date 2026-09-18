@@ -11,3 +11,8 @@ export function getBackendUrl(): string {
   }
   return TUNNEL_URL;
 }
+
+// Affiche "1 pt" / "N pts" correctement
+export function ptsLabel(n: number): string {
+  return n + ' pt' + (n > 1 ? 's' : '');
+}

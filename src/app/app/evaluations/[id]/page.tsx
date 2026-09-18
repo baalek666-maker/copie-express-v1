@@ -89,7 +89,7 @@ export default async function EvaluationDetailPage({ params }: { params: { id: s
           <CardHeader className="pb-2">
             <CardDescription>Total points</CardDescription>
             <CardTitle className="text-2xl">
-              {evaluation.grading_scale.reduce((sum: number, q: any) => sum + Number(q.max_points), 0)} pts
+              {evaluation.grading_scale.reduce((sum: number, q: any) => sum + Number(q.max_points), 0)} {evaluation.grading_scale.reduce((sum: number, q: any) => sum + Number(q.max_points), 0) > 1 ? 'pts' : 'pt'}
             </CardTitle>
           </CardHeader>
           <CardContent>

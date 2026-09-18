@@ -53,7 +53,7 @@ export function PhotoTips() {
             <div>
               <div className="font-medium text-sm">📸 Conseils pour une bonne photo</div>
               <div className="text-xs text-muted-foreground">
-                Une copie bien photographiée = une extraction fiable à 95%+
+                Une copie bien photographiée = une lecture fiable à 95%+
               </div>
             </div>
           </div>

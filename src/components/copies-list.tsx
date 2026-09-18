@@ -194,12 +194,12 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
                     <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-0.5">
                       {isValidated && (
                         <span className="text-green-700 font-medium">
-                          ✓ Note validée : {copy.final_score} / {gradingScale.reduce((s, q) => s + q.max_points, 0)} pts
+                          ✓ Note validée : {copy.final_score} / {gradingScale.reduce((s, q) => s + q.max_points, 0)} {gradingScale.reduce((s, q) => s + q.max_points, 0) > 1 ? 'pts' : 'pt'}
                         </span>
                       )}
                       {!isValidated && copy.proposed_score !== null && copy.proposed_score !== undefined && (
                         <span className="text-blue-700 font-medium">
-                          📊 Note proposée : {copy.proposed_score} / {copy.proposed_max_score} pts
+                          📊 Note proposée : {copy.proposed_score} / {copy.proposed_max_score} {copy.proposed_max_score === 1 ? 'pt' : 'pts'}
                         </span>
                       )}
                       {!isValidated && (copy.status === 'ready_to_validate' || copy.status === 'validated') && (

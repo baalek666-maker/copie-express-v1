@@ -200,7 +200,7 @@ export function BaremeAuto({
                 <tfoot className="bg-muted/50">
                   <tr>
                     <td colSpan={3} className="p-2 font-medium">Total</td>
-                    <td className="p-2 text-right font-bold">{total} pts</td>
+                    <td className="p-2 text-right font-bold">{total} {total > 1 ? 'pts' : 'pt'}</td>
                   </tr>
                 </tfoot>
               </table>

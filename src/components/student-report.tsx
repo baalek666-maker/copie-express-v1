@@ -109,7 +109,7 @@ export function StudentReport({ copy, evaluationTitle, maxTotalPoints }: {
                   <div className="text-right">
                     <div className="text-xs uppercase tracking-wide text-slate-500 font-medium">Note</div>
                     <div className="text-3xl font-bold">
-                      {note20 !== null ? note20 + ' / 20' : (score ?? '—') + ' / ' + (maxPoints || '—') + ' pts'}
+                      {note20 !== null ? note20 + ' / 20' : (score ?? '—') + ' / ' + (maxPoints || '—') + ' pt' + (Number(maxPoints) > 1 ? 's' : '')}
                     </div>
                     {note20 !== null && maxPoints > 0 && (
                       <div className="text-xs text-slate-500">{score} points sur {maxPoints}</div>
