@@ -248,6 +248,11 @@ export default function NewEvaluationPage() {
               <Link href="/app">Annuler</Link>
             </Button>
           </div>
+          {!title.trim() || !subject || !classLevel ? (
+            <p className="text-xs text-center text-muted-foreground">
+              Complète les 3 champs pour activer le bouton.
+            </p>
+          ) : null}
 
           <p className="text-xs text-center text-muted-foreground">
             💡 Sans barème, le système propose des notes indicatives. Tu valides tout.
