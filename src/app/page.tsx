@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FadeIn } from '@/components/fade-in';
+import { SmoothScroll } from '@/components/smooth-scroll';
 import { LeadCapture } from '@/components/lead-capture';
 import {
   DashboardMockup,
@@ -146,32 +147,35 @@ const faqs = [
 export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col">
+      <SmoothScroll />
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-30">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <img src="/favicon.svg" alt="" className="h-8 w-8" />
-            <span>Copie Express</span>
-          </Link>
-          <nav className="flex items-center gap-2">
-            <Link href="/why-us" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
-                            Pourquoi nous
-                          </Link>
-                          <Link href="/pricing" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
-                            Tarifs
-                          </Link>
-                          <Link href="/blog" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
-                            Blog
-                          </Link>
-            <Button asChild variant="ghost">
-              <Link href="/login">Connexion</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">
-                Essai gratuit <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
-          </nav>
+      <header className="sticky top-0 z-30 -mx-0 px-0">
+        <div className="header-shell border-b bg-background/80 backdrop-blur transition-all duration-300" data-scrolled="false">
+          <div className="container flex h-16 items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+              <img src="/favicon.svg" alt="" className="h-8 w-8" />
+              <span>Copie Express</span>
+            </Link>
+            <nav className="flex items-center gap-2">
+              <Link href="/why-us" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+                                Pourquoi nous
+                              </Link>
+                              <Link href="/pricing" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+                                Tarifs
+                              </Link>
+                              <Link href="/blog" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
+                                Blog
+                              </Link>
+              <Button asChild variant="ghost">
+                <Link href="/login">Connexion</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">
+                  Essai gratuit <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </nav>
+          </div>
         </div>
       </header>
 

@@ -2,27 +2,38 @@
 
 import { useEffect } from 'react';
 
-// Smooth scroll type Lenis (inspiré ed.ai) — inerte sur mobile tactile par défaut
+// 1) Smooth scroll Lenis — desktop uniquement, aucun effet sur mobile tactile.
+// 2) Détection scroll → condense le header .header-shell de la landing.
+// Ne change ni couleurs ni layout : uniquement l'inertie molette + l'ombre header.
 export function SmoothScroll() {
   useEffect(() => {
-    if (window.matchMedia('(pointer: coarse)').matches) return;
-    let raf: number;
+    let raf = 0;
     let lenis: any = null;
 
-    (async () => {
-      const mod = await import('lenis');
-      const Lenis = mod.default;
-      lenis = new Lenis({ duration: 1.1, smoothWheel: true });
-      const loop = (t: number) => {
-        lenis?.raf(t);
+    if (!window.matchMedia('(pointer: coarse)').matches) {
+      import('lenis').then((mod) => {
+        lenis = new mod.default({ duration: 1.15 });
+        const loop = (t: number) => {
+          lenis?.raf(t);
+          raf = requestAnimationFrame(loop);
+        };
         raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-    })();
+      });
+    }
+
+    const onScroll = () => {
+      const shell = document.querySelector('.header-shell');
+      if (shell) {
+        (shell as HTMLElement).dataset.scrolled = String(window.scrollY > 24);
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
     return () => {
       cancelAnimationFrame(raf);
       lenis?.destroy();
+      window.removeEventListener('scroll', onScroll);
     };
   }, []);
 
