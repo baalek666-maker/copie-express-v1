@@ -650,6 +650,8 @@ export default function HomePage() {
           </p>
           <nav className="flex gap-4 flex-wrap justify-center text-sm text-muted-foreground">
             <Link href="/why-us" className="hover:text-foreground">Pourquoi nous</Link>
+            <Link href="/guide" className="hover:text-foreground">Guide enseignant</Link>
+            <Link href="/notice-familles" className="hover:text-foreground">Notice familles</Link>
             <Link href="/pricing" className="hover:text-foreground">Tarifs</Link>
             <Link href="/contact" className="hover:text-foreground">Contact</Link>
             <Link href="/legal/cgu" className="hover:text-foreground">CGU</Link>

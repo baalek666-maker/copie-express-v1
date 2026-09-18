@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { BlogNav } from '@/components/blog-nav';
 
 export const metadata: Metadata = {
   title: 'Correction de copies : 3h de gagnées par semaine — Blog Copie Express',
@@ -6,5 +7,10 @@ export const metadata: Metadata = {
 };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <BlogNav />
+      {children}
+    </>
+  );
 }

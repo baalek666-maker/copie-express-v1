@@ -146,6 +146,17 @@ export default async function AccountPage() {
             <p>
               Voir nos <Link href="/legal/privacy" className="text-primary hover:underline">engagements RGPD</Link>.
             </p>
+            <div className="pt-3 border-t space-y-1">
+              <p className="font-medium text-foreground">Ressources</p>
+              <p>
+                <Link href="/guide" className="text-primary hover:underline">Guide enseignant</Link>
+                {' — '}le parcours complet en 5 étapes.
+              </p>
+              <p>
+                <Link href="/notice-familles" className="text-primary hover:underline">Notice d&apos;information aux familles</Link>
+                {' — '}à imprimer pour informer parents et élèves.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </FadeIn>

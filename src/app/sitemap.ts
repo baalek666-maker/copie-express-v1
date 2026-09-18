@@ -8,6 +8,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const publicPages = [
     { path: '', priority: 1.0, changefreq: 'weekly' },
     { path: 'pricing', priority: 0.9, changefreq: 'monthly' },
+    { path: 'guide', priority: 0.8, changefreq: 'monthly' },
+    { path: 'notice-familles', priority: 0.6, changefreq: 'yearly' },
+    { path: 'blog', priority: 0.7, changefreq: 'weekly' },
     { path: 'why-us', priority: 0.8, changefreq: 'monthly' },
     { path: 'login', priority: 0.4, changefreq: 'yearly' },
     { path: 'signup', priority: 0.7, changefreq: 'monthly' },
