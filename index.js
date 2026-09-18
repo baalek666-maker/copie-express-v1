@@ -833,6 +833,64 @@ function getAppreciation(ratio) {
   return 'Insuffisant';
 }
 
+// === STRIPE CHECKOUT : création d'une session de paiement ===
+// Plans (montants en centimes) — en ligne avec /pricing
+const PLANS = {
+  petit:         { label: 'Petit Correcteur',  amount: 500,   interval: 'month', interval_count: 1 },
+  monthly:       { label: 'Standard',          amount: 1500,  interval: 'month', interval_count: 1 },
+  yearly:        { label: 'Annuel Standard',   amount: 9900,  interval: 'year',  interval_count: 1 },
+  expert_yearly: { label: 'Expert Bac/Brevet', amount: 14900, interval: 'year',  interval_count: 1 },
+};
+
+const FRONT_URL = 'https://copie-express-v1.vercel.app';
+
+app.post('/api/stripe/checkout', authMiddleware, authLimiter, async (req, res) => {
+  const planId = req.body?.plan;
+  const plan = PLANS[planId];
+  if (!plan) return res.status(400).json({ error: 'unknown_plan' });
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(503).json({ error: 'payment_not_configured' });
+  }
+  try {
+    // Prix pré-créé dans le dashboard Stripe si dispo, sinon prix inline
+    const priceEnv = {
+      petit: process.env.STRIPE_PRICE_PETIT,
+      monthly: process.env.STRIPE_PRICE_MONTHLY,
+      yearly: process.env.STRIPE_PRICE_YEARLY,
+      expert_yearly: process.env.STRIPE_PRICE_EXPERT,
+    }[planId];
+
+    const line_item = priceEnv
+      ? { quantity: 1, price: priceEnv }
+      : {
+          quantity: 1,
+          price_data: {
+            currency: 'eur',
+            unit_amount: plan.amount,
+            recurring: { interval: plan.interval, interval_count: plan.interval_count },
+            product_data: { name: `Copie Express — ${plan.label}` },
+          },
+        };
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer_email: req.user.email,
+      line_items: [line_item],
+      metadata: { user_id: req.user.id, plan_id: planId },
+      subscription_data: { metadata: { user_id: req.user.id, plan_id: planId } },
+      success_url: `${FRONT_URL}/app/billing?status=success`,
+      cancel_url: `${FRONT_URL}/app/billing?status=cancelled`,
+      allow_promotion_codes: true,
+      locale: 'fr',
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('checkout error:', err.message);
+    res.status(500).json({ error: 'checkout_failed' });
+  }
+});
+
 // === STRIPE WEBHOOK ===
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   // Vérification signature Stripe
@@ -851,13 +909,47 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const userId = session.metadata.user_id;
-      const planId = session.metadata.plan_id;
+      const userId = session.metadata?.user_id;
+      const planId = session.metadata?.plan_id;
+      // Fin de période depuis l'abonnement Stripe
+      let expiresAt = null;
+      try {
+        if (session.subscription) {
+          const sub = await stripe.subscriptions.retrieve(session.subscription);
+          expiresAt = new Date(sub.current_period_end * 1000).toISOString();
+        }
+      } catch (e) { console.error('subscription retrieve failed:', e.message); }
       await supabase.from('users').update({
         subscription_status: 'active',
         subscription_plan: planId,
         stripe_customer_id: session.customer,
+        ...(expiresAt ? { subscription_expires_at: expiresAt } : {}),
       }).eq('id', userId);
+    }
+    // Renouvellement payé : prolonge la date d'expiration
+    if (event.type === 'invoice.paid') {
+      const subId = event.data.object?.subscription;
+      if (subId) {
+        try {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          const userId = sub.metadata?.user_id;
+          if (userId) {
+            await supabase.from('users').update({
+              subscription_status: 'active',
+              subscription_expires_at: new Date(sub.current_period_end * 1000).toISOString(),
+            }).eq('id', userId);
+          }
+        } catch (e) { console.error('invoice.paid failed:', e.message); }
+      }
+    }
+    // Abonnement résilié : repasse le compte en inactif
+    if (event.type === 'customer.subscription.deleted') {
+      const userId = event.data.object?.metadata?.user_id;
+      if (userId) {
+        await supabase.from('users').update({
+          subscription_status: 'canceled',
+        }).eq('id', userId);
+      }
     }
     res.json({ received: true });
   } catch (err) {

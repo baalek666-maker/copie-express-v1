@@ -2,16 +2,24 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createServerSupabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/fade-in';
-import { ArrowLeft, Sparkles, CreditCard, Mail } from 'lucide-react';
+import { PayButton } from '@/components/pay-button';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, CreditCard, Mail, PartyPopper, XCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+const PLAN_DETAILS: Record<string, { name: string; price: string }> = {
+  petit:         { name: 'Petit Correcteur',  price: '5€/mois' },
+  monthly:       { name: 'Standard',          price: '15€/mois' },
+  yearly:        { name: 'Annuel Standard',   price: '99€/an' },
+  expert_yearly: { name: 'Expert Bac/Brevet', price: '149€/an' },
+};
 
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: { plan?: string };
+  searchParams: { plan?: string; status?: string };
 }) {
   const supabase = createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
@@ -25,6 +33,9 @@ export default async function BillingPage({
     expert_yearly: 'Expert Bac/Brevet (149€/an)',
   };
   const planLabel = plan && planNames[plan] ? planNames[plan] : 'Forfait';
+  const details = plan ? PLAN_DETAILS[plan] : undefined;
+  const showSuccess = searchParams.status === 'success';
+  const showCancelled = searchParams.status === 'cancelled';
 
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-6">
@@ -34,11 +45,48 @@ export default async function BillingPage({
         </Link>
       </FadeIn>
 
+      {showSuccess && (
+        <FadeIn>
+          <Card className="border-green-500/30 bg-green-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700">
+                <PartyPopper className="h-5 w-5" />
+                Paiement reçu, forfait activé !
+              </CardTitle>
+              <CardDescription className="text-green-700/80">
+                Ton forfait est actif. Bonne correction.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" asChild>
+                <Link href="/app">Retour au tableau de bord</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </FadeIn>
+      )}
+
+      {showCancelled && (
+        <FadeIn>
+          <Card className="border-amber-500/30 bg-amber-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-amber-700">
+                <XCircle className="h-5 w-5" />
+                Paiement annulé
+              </CardTitle>
+              <CardDescription className="text-amber-700/80">
+                Aucun montant n'a été prélevé. Tu peux réessayer quand tu veux.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </FadeIn>
+      )}
+
       <FadeIn delay={50}>
         <div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Passer au forfait {planLabel}</h1>
           <p className="text-muted-foreground mt-2">
-            Le paiement en ligne arrive très bientôt. En attendant, on active ton forfait à la main.
+            Paiement sécurisé par carte bancaire. Résiliable à tout moment.
           </p>
         </div>
       </FadeIn>
@@ -47,46 +95,47 @@ export default async function BillingPage({
         <Card className="border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              Activation express
+              <CreditCard className="h-4 w-4 text-primary" />
+              Paiement par carte
             </CardTitle>
             <CardDescription>
-              Envoie-nous un email, on active ton forfait dans la journée.
+              {details
+                ? `${details.name} — ${details.price}. Sans engagement.`
+                : 'Choisis ton forfait depuis la page Tarifs.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <a
-              href={`mailto:contact@copie-express.fr?subject=Passer au forfait ${planLabel}&body=Bonjour, je souhaite passer au forfait ${planLabel}. Mon email : ${user.email}`}
-              className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6 rounded-md font-medium transition-colors"
-            >
-              <Mail className="h-4 w-4" />
-              Nous écrire
-            </a>
+            {details ? (
+              <PayButton plan={plan!} label={details.price} />
+            ) : (
+              <p className="text-sm text-muted-foreground">Aucun forfait sélectionné.</p>
+            )}
             <p className="text-xs text-center text-muted-foreground">
-              Réponse sous 24h en moyenne · Paiement sur facture ou virement
+              Paiement sécurisé Stripe · CB, Visa, Mastercard · Facture par email
             </p>
           </CardContent>
         </Card>
       </FadeIn>
 
-      <FadeIn delay={200}>
+      <FadeIn delay={150}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-primary" />
-              Paiement en ligne (bientôt)
+              <Mail className="h-4 w-4 text-primary" />
+              Autre solution : sur facture
             </CardTitle>
+            <CardDescription>
+              Établissement scolaire ou préférence pour un virement ? Écris-nous, on s'occupe de tout.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>
-              Le paiement CB via Stripe sera disponible dans les prochaines semaines.
-            </p>
-            <p>
-              En attendant, on active manuellement ton forfait dès réception de ton email.
-            </p>
-            <Button variant="outline" asChild className="mt-2">
-              <Link href="/app/account">Voir mon compte</Link>
-            </Button>
+          <CardContent>
+            <a
+              href={`mailto:contact@copie-express.fr?subject=Forfait ${planLabel}&body=Bonjour, je souhaite passer au forfait ${planLabel}. Mon email : ${user.email}`}
+              className="flex items-center justify-center gap-2 w-full border border-input bg-background hover:bg-accent h-11 px-6 rounded-md font-medium transition-colors text-sm"
+            >
+              <Mail className="h-4 w-4" />
+              Nous écrire
+            </a>
           </CardContent>
         </Card>
       </FadeIn>
