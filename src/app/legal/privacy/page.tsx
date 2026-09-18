@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <li>Évaluations créées (titre, type, matière, barème)</li>
           <li>Photos de copies d&apos;élèves uploadées</li>
           <li>Texte extrait des copies par notre système de reconnaissance</li>
-          <li>Réponses des élèves identifiées automatiquement</li>
+          <li>Réponses des élèves lues et relevées</li>
           <li>Notes finales validées par l&apos;enseignant</li>
           <li>Exports générés (CSV SACoche, Pronote)</li>
         </ul>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         <h2>3. Finalités du traitement</h2>
         <p>Vos données sont utilisées pour :</p>
         <ul>
-          <li>Fournir le service d&apos;extraction automatique et d&apos;assistance à la saisie</li>
+          <li>Fournir le service de lecture des copies et d&apos;assistance à la saisie</li>
           <li>Gérer votre compte utilisateur et votre abonnement</li>
           <li>Vous envoyer des emails transactionnels (confirmation, reçu, alertes de quota)</li>
           <li>Assurer la sécurité du service et prévenir les abus</li>
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
           <tbody>
             <tr><td>Supabase Inc.</td><td>Base de données, authentification, stockage fichiers</td><td>Frankfurt, UE (Irlande par défaut)</td><td>DPO, DPA signé, hébergement UE</td></tr>
             <tr><td>Vercel Inc.</td><td>Hébergement du site web</td><td>Edge network mondial (US, EU, Asie)</td><td>DPA, chiffrement TLS</td></tr>
-            <tr><td>Prestataire d&apos;extraction (UE)</td><td>Extraction automatique des réponses sur les copies</td><td>France (UE)</td><td>Pas de conservation des données, DPA</td></tr>
+            <tr><td>Prestataire d&apos;extraction (UE)</td><td>Lecture des réponses sur les copies</td><td>France (UE)</td><td>Pas de conservation des données, DPA</td></tr>
             <tr><td>Resend</td><td>Envoi d&apos;emails transactionnels</td><td>US (siège), edge network mondial</td><td>DPA, transfert via Standard Contractual Clauses</td></tr>
             <tr><td>Stripe</td><td>Paiement en ligne</td><td>US (siège), hébergement UE</td><td>PCI-DSS niveau 1, DPA signé</td></tr>
           </tbody>
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
 
         <h2>6. Durée de conservation</h2>
         <ul>
-          <li><strong>Photos de copies et texte extrait :</strong> 30 jours après la création de l&apos;évaluation (suppression automatique)</li>
+          <li><strong>Photos de copies et texte extrait :</strong> 30 jours après la création de l&apos;évaluation (supprimées après 30 jours)</li>
           <li><strong>Évaluations et barèmes :</strong> tant que le compte est actif</li>
           <li><strong>Notes finales validées :</strong> tant que le compte est actif (export recommandé par l&apos;enseignant)</li>
           <li><strong>Données de compte :</strong> tant que le compte est actif + 3 ans après suppression (obligation comptable)</li>
@@ -112,7 +112,7 @@ export default function PrivacyPage() {
           <li>Authentification forte par lien magique à expiration</li>
           <li>Buckets de stockage privés avec policies d&apos;accès strictes</li>
           <li>Mesures anti-abus (quota, fingerprint, détection de patterns)</li>
-          <li>Sauvegardes automatiques quotidiennes</li>
+          <li>Sauvegardes quotidiennes</li>
           <li>Audits de sécurité réguliers</li>
         </ul>
 
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
         <ul>
           <li>Aucune copie n&apos;est utilisée pour entraîner des modèles</li>
           <li>Aucune copie n&apos;est partagée avec des tiers</li>
-          <li>Suppression automatique des copies après 30 jours</li>
+          <li>Suppression des copies après 30 jours</li>
           <li>Hébergement exclusif en UE (Supabase Frankfurt)</li>
         </ul>
 

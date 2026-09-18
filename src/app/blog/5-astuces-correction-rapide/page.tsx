@@ -18,7 +18,7 @@ export default function Article5Astuces() {
         Tu prends la question 1, tu corriges toutes les copies sur cette question.
         Puis la question 2. Puis la question 3. C&apos;est 40% plus rapide que de corriger
         chaque copie intégralement. Ton cerveau se souvient de la réponse attendue et
-        passe en mode automatique.
+        passe à la vitesse supérieure.
       </p>
       <h2>2. Utilise un barème clair, AVANT de commencer</h2>
       <p>

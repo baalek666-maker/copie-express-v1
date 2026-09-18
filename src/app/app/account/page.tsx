@@ -141,7 +141,7 @@ export default async function AccountPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
-              Tes copies sont hébergées en Europe (Supabase Ireland), supprimées automatiquement après 30 jours.
+              Tes copies sont hébergées en Europe (Supabase Ireland), supprimées après 30 jours.
             </p>
             <p>
               Voir nos <Link href="/legal/privacy" className="text-primary hover:underline">engagements RGPD</Link>.

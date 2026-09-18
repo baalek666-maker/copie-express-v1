@@ -21,7 +21,7 @@ export default function ArticleSACochePronote() {
       <h3>Forces</h3>
       <ul><li>Gratuit</li><li>Évaluation par compétences (socle)</li><li>Conforme RGPD</li></ul>
       <h3>Faiblesses</h3>
-      <ul><li>Interface datée</li><li>Pas d&apos;import automatique de notes manuscrites</li><li>Nécessite saisie manuelle</li></ul>
+      <ul><li>Interface datée</li><li>Pas d&apos;import de notes manuscrites</li><li>Nécessite saisie manuelle</li></ul>
       <h2>Pronote : le mastodonte des lycées</h2>
       <p>
         Utilisé par la majorité des lycées français. Pronote gère les notes, les absences, les
@@ -31,7 +31,7 @@ export default function ArticleSACochePronote() {
       <h3>Forces</h3>
       <ul><li>Complet (notes + absences + EDT + communication)</li><li>Interface moderne</li><li>Conforme RGPD</li></ul>
       <h3>Faiblesses</h3>
-      <ul><li>Payant pour l&apos;établissement</li><li>Pas d&apos;import automatique non plus</li><li>Saisie manuelle inévitable</li></ul>
+      <ul><li>Payant pour l&apos;établissement</li><li>Pas d&apos;import de notes manuscrites non plus</li><li>Saisie manuelle inévitable</li></ul>
       <h2>Comment importer sans saisir ?</h2>
       <p>La seule solution : générer un CSV au bon format, puis l&apos;importer dans SACoche ou Pronote.</p>
       <p>C&apos;est exactement ce que fait un outil de correction dédié : il extrait les réponses, propose une note, et exporte le CSV. Plus besoin de saisir ligne par ligne.</p>

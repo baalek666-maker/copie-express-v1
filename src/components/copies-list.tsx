@@ -14,6 +14,7 @@ import { CheckCircle2, Edit3, Loader2, FileText } from 'lucide-react';
 import { PhotoViewer } from './photo-viewer';
 import { ConfidenceBadge } from './confidence-badge';
 import { ErrorTypeBadges, countErrorTypes, countErrorTypesAll } from './error-types';
+import { StudentReport } from './student-report';
 import { toast } from 'sonner';
 
 interface Copy {
@@ -28,6 +29,7 @@ interface Copy {
   ocr_text?: string;
   proposed_score?: number | null;
   proposed_max_score?: number | null;
+  validated_at?: string | null;
 }
 
 interface Question {
@@ -36,10 +38,11 @@ interface Question {
   max_points: number;
 }
 
-export function CopiesList({ copies, evaluationId, gradingScale }: {
+export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle }: {
   copies: Copy[];
   evaluationId: string;
   gradingScale: Question[];
+  evaluationTitle?: string;
 }) {
   const [editingCopy, setEditingCopy] = useState<Copy | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -216,6 +219,7 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
         <CopyEditorDialog
           copy={editingCopy}
           gradingScale={gradingScale}
+          evaluationTitle={evaluationTitle}
           onClose={() => setEditingCopy(null)}
           onSaved={() => { setEditingCopy(null); router.refresh(); }}
         />
@@ -224,9 +228,10 @@ export function CopiesList({ copies, evaluationId, gradingScale }: {
   );
 }
 
-function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
+function CopyEditorDialog({ copy, gradingScale, evaluationTitle, onClose, onSaved }: {
   copy: Copy;
   gradingScale: Question[];
+  evaluationTitle?: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -358,6 +363,11 @@ function CopyEditorDialog({ copy, gradingScale, onClose, onSaved }: {
             <Button onClick={handleSave} disabled={saving} size="lg">
               {saving ? 'Validation...' : '✓ Valider la note proposée'}
             </Button>
+            <StudentReport
+              copy={copy}
+              evaluationTitle={evaluationTitle}
+              maxTotalPoints={gradingScale.reduce((s: number, q: any) => s + (q.max_points || 0), 0)}
+            />
             <Button variant="outline" onClick={onClose} disabled={saving}>
               Fermer
             </Button>

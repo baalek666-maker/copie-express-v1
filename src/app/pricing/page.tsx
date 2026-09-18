@@ -78,7 +78,7 @@ export default function PricingPage() {
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold">Choisis ton forfait</h1>
           <p className="text-lg text-muted-foreground">
-            Tous les forfaits incluent l'extraction automatique des réponses, l'export SACoche/Pronote, et la conformité RGPD.
+            Tous les forfaits incluent la lecture des réponses, l'export SACoche/Pronote, et la conformité RGPD.
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <span className="flex items-center gap-1">✓ Sans engagement</span>
@@ -126,7 +126,7 @@ export default function PricingPage() {
           </CardHeader>
           <CardContent className="text-sm space-y-2">
             <p>• Copies illimitées = maximum 2 000 copies/mois (anti-abus). Au-delà, on te prévient et on discute.</p>
-            <p>• Toutes les copies sont supprimées automatiquement après 30 jours (RGPD).</p>
+            <p>• Toutes les copies sont supprimées après 30 jours (RGPD).</p>
             <p>• Tu peux exporter tes données à tout moment depuis ton compte.</p>
             <p>• Paiement sécurisé Stripe. On ne stocke aucune info de carte.</p>
           </CardContent>

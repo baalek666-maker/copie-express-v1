@@ -50,8 +50,8 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: 'Barème automatique',
-    desc: 'Upload ton sujet : questions, points et savoir-faire extraits en 1 clic.',
+    title: 'Barème prêt en 2 minutes',
+    desc: 'Dépose ton sujet : questions, points et savoir-faire prêts en 1 clic.',
   },
   {
     icon: Heart,
@@ -99,7 +99,7 @@ const faqs = [
   },
   {
     q: 'Mes copies sont en sécurité ?',
-    a: 'Hébergement Supabase Ireland (Europe). Suppression automatique après 30 jours. Jamais utilisées pour entraîner des modèles. Tu peux supprimer ton compte et toutes tes données à tout moment.',
+    a: 'Hébergement Supabase Ireland (Europe). Suppression après 30 jours. Jamais utilisées pour entraîner des modèles. Tu peux supprimer ton compte et toutes tes données à tout moment.',
   },
   {
     q: "Ça marche pour mes matières ?",
@@ -107,7 +107,7 @@ const faqs = [
   },
   {
     q: "Et si l'élève utilise une autre méthode de résolution ?",
-    a: "En maths/physique, un même problème peut avoir 3-4 méthodes valides (discriminant, factorisation, racines, graphique...). Le système détecte automatiquement la méthode utilisée par chaque élève. Tu valides si elle est correcte en 1 clic.",
+    a: "En maths/physique, un même problème peut avoir 3-4 méthodes valides (discriminant, factorisation, racines, graphique...). Le système relève la méthode utilisée par chaque élève. Tu valides si elle est correcte en 1 clic.",
   },
   {
     q: 'Combien de temps ça prend vraiment ?',
