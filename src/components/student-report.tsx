@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 import { countErrorTypes, ERROR_CATEGORIES } from './error-types';
 import { frPoints, normId, type CopyAnswer, type ScaleQuestion } from '@/lib/scoring';
 
@@ -62,7 +63,7 @@ export function StudentReport({ studentName, answers, scale, score, max, evaluat
                     À imprimer ou à enregistrer en PDF pour l'élève ou sa famille.
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setOpen(false)} aria-label="Fermer">✕</Button>
+                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Fermer"><X className="h-4 w-4" /></Button>
               </div>
 
               <div className="report-print-zone bg-white text-slate-900 rounded-lg p-8 text-[13px] leading-relaxed">

@@ -198,7 +198,7 @@ export default function HomePage() {
                 Redeviens un prof.
                 <br />
                 <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent italic font-serif">
-                  Pas une machine à cliquer.
+                  Pas une machine à{'\u00a0'}cliquer.
                 </span>
               </h1>
 
@@ -250,15 +250,15 @@ export default function HomePage() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary"><CountUp end={350000} /></div>
+                <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums"><CountUp end={350000} /></div>
                 <div className="text-xs text-muted-foreground mt-1">profs en France qui passent 3h à saisir</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary"><CountUp end={90} suffix="×" /></div>
+                <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums"><CountUp end={90} suffix="×" /></div>
                 <div className="text-xs text-muted-foreground mt-1">plus rapide qu'une saisie manuelle</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary"><CountUp end={99.2} decimals={1} suffix="%" /></div>
+                <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums"><CountUp end={99.2} decimals={1} suffix="%" /></div>
                 <div className="text-xs text-muted-foreground mt-1">de fiabilité sur 1 000 copies testées</div>
               </div>
             </div>
@@ -453,15 +453,17 @@ export default function HomePage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { emoji: '🌙', icon: Moon, title: 'Tes soirées', text: 'Fini les mardis 22h devant SACoche. Tu regardes ta série, tu lis ton livre, tu dors.' },
-              { emoji: '🏖️', icon: Sun, title: 'Tes weekends', text: "Ton dimanche après-midi t'appartient. Pas de piles de copies sur la table du salon." },
-              { emoji: '❤️', icon: Heart, title: 'Ton couple, ta famille', text: "Tes enfants te demandent pourquoi tu cliques tout le temps. Tu leur montres que tu les écoutes." },
-              { emoji: '🎓', icon: GraduationCap, title: 'Ton métier, ton cœur', text: 'Tu te concentres sur ce qui compte vraiment : enseigner, transmettre, voir tes élèves progresser.' },
+              { icon: Moon, title: 'Tes soirées', text: 'Fini les mardis 22h devant SACoche. Tu regardes ta série, tu lis ton livre, tu dors.' },
+              { icon: Sun, title: 'Tes weekends', text: "Ton dimanche après-midi t'appartient. Pas de piles de copies sur la table du salon." },
+              { icon: Heart, title: 'Ton couple, ta famille', text: "Tes enfants te demandent pourquoi tu cliques tout le temps. Tu leur montres que tu les écoutes." },
+              { icon: GraduationCap, title: 'Ton métier, ton cœur', text: 'Tu te concentres sur ce qui compte vraiment : enseigner, transmettre, voir tes élèves progresser.' },
             ].map((b, i) => (
               <FadeIn key={i} delay={i * 80}>
                 <Card className="h-full border-orange-200/50 bg-gradient-to-br from-white to-orange-50/30 dark:from-card dark:to-orange-950/10">
                   <CardContent className="p-6 text-center space-y-3">
-                    <div className="text-5xl">{b.emoji}</div>
+                    <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <b.icon className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
+                    </div>
                     <h3 className="font-semibold text-lg">{b.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{b.text}</p>
                   </CardContent>
@@ -534,7 +536,7 @@ export default function HomePage() {
             {/* Annuel — featured */}
             <FadeIn delay={200}>
               <Card className="h-full border-2 border-primary shadow-xl shadow-primary/10 relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground">⭐ Populaire</div>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground inline-flex items-center gap-1 whitespace-nowrap"><Star className="h-3 w-3 fill-current" aria-hidden="true" /> Populaire</div>
                 <CardContent className="p-6 space-y-4">
                   <div className="text-sm font-semibold uppercase tracking-wide text-primary">Standard</div>
                   <div className="flex items-baseline gap-1">
@@ -583,13 +585,12 @@ export default function HomePage() {
 
           <FadeIn delay={300}>
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center text-xs text-muted-foreground">
-              <span>✓ Sans engagement</span>
-              <span className="hidden sm:inline">•</span>
-              <span>✓ Paiement sécurisé Stripe</span>
-              <span className="hidden sm:inline">•</span>
-              <span>✓ Satisfait ou remboursé 30j</span>
-              <span className="hidden sm:inline">•</span>
-              <span>✓ RGPD + données en Europe</span>
+              {['Sans engagement', 'Paiement sécurisé Stripe', 'Satisfait ou remboursé 30j', 'RGPD + données en Europe'].map((item) => (
+                <span key={item} className="inline-flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5 text-green-600" aria-hidden="true" />
+                  {item}
+                </span>
+              ))}
             </div>
           </FadeIn>
         </div>
@@ -638,8 +639,13 @@ export default function HomePage() {
               5 copies offertes. Aucun engagement. 3 minutes pour te convaincre.
             </p>
             <LeadCapture />
-            <p className="text-xs text-zinc-400 pt-2">
-              ✓ 5 copies offertes · ✓ Sans carte bancaire · ✓ Résiliable à tout moment
+            <p className="text-xs text-zinc-400 pt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+              {['5 copies offertes', 'Sans carte bancaire', 'Résiliable à tout moment'].map((item) => (
+                <span key={item} className="inline-flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5 text-orange-400" aria-hidden="true" />
+                  {item}
+                </span>
+              ))}
             </p>
             <p className="text-xs text-zinc-500 pt-3">
               Outil de saisie administrative · Non destiné aux épreuves officielles

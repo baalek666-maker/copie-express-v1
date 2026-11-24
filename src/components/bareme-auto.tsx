@@ -7,7 +7,7 @@ import { frPoints } from '@/lib/scoring';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, Wand2, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader2, Wand2, Save, AlertCircle, CheckCircle2, Lightbulb } from 'lucide-react';
 
 type BaremeQuestion = {
   id: string;
@@ -144,7 +144,10 @@ export function BaremeAuto({
         {questions && (
           <div className="space-y-3">
             {comment && (
-              <p className="text-sm text-muted-foreground italic">💡 {comment}</p>
+              <p className="text-sm text-muted-foreground flex items-start gap-1.5">
+                <Lightbulb className="h-4 w-4 shrink-0 mt-0.5 text-primary" aria-hidden="true" />
+                <span>{comment}</span>
+              </p>
             )}
             <div className="rounded-md border overflow-hidden">
               <table className="w-full text-sm">
@@ -204,7 +207,10 @@ export function BaremeAuto({
                 )}
               </Button>
               {savedAt && (
-                <span className="text-sm text-green-700">✓ Barème enregistré à {savedAt.toLocaleTimeString('fr-FR')}</span>
+                <span className="text-sm text-green-700 dark:text-green-400 inline-flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                  Barème enregistré à {savedAt.toLocaleTimeString('fr-FR')}
+                </span>
               )}
             </div>
           </div>
