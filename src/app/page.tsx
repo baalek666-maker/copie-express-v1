@@ -152,12 +152,13 @@ export default function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-30 -mx-0 px-0">
         <div className="header-shell border-b bg-background/80 backdrop-blur transition-all duration-300" data-scrolled="false">
-          <div className="container px-4 sm:px-8 flex h-16 items-center justify-between gap-2">
-            <Link href="/" className="flex items-center gap-2 font-bold text-base sm:text-lg whitespace-nowrap shrink-0">
-              <img src="/favicon.svg" alt="" className="h-7 w-7 sm:h-8 sm:w-8" />
-              <span>Copie Express</span>
+          {/* Téléphone : tout tient sur une ligne dès 320 px. Le nom peut se raccourcir en dernier recours, jamais déborder. */}
+          <div className="container px-3 sm:px-8 flex h-16 items-center justify-between gap-2">
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-2 font-bold text-[15px] sm:text-lg min-w-0">
+              <img src="/favicon.svg" alt="" className="h-6 w-6 sm:h-8 sm:w-8 shrink-0" />
+              <span className="truncate">Copie Express</span>
             </Link>
-            <nav className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <nav className="flex items-center gap-0.5 sm:gap-2 shrink-0">
               <Link href="/why-us" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
                                 Pourquoi nous
                               </Link>
@@ -167,7 +168,7 @@ export default function HomePage() {
                               <Link href="/blog" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
                                 Blog
                               </Link>
-              <Button asChild variant="ghost" className="px-2.5 sm:px-4">
+              <Button asChild variant="ghost" className="hidden min-[350px]:inline-flex px-2 sm:px-4">
                 <Link href="/login">Connexion</Link>
               </Button>
               <Button asChild className="px-3 sm:px-4">
