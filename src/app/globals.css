@@ -194,6 +194,29 @@ a:active {
   transition: height 0.3s ease;
 }
 
+/* ===== Entrée en scène du haut de la landing : les éléments arrivent l'un après l'autre =====
+   En CSS pur : l'animation démarre dès l'affichage, sans attendre le JavaScript. */
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(var(--hero-y, 16px)); }
+}
+.hero-enter,
+.hero-stagger > * {
+  animation: hero-in 700ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--hero-delay, 0ms);
+}
+.hero-stagger > :nth-child(1) { --hero-delay: 60ms; }
+.hero-stagger > :nth-child(2) { --hero-delay: 130ms; }
+.hero-stagger > :nth-child(3) { --hero-delay: 210ms; }
+.hero-stagger > :nth-child(4) { --hero-delay: 290ms; }
+.hero-stagger > :nth-child(5) { --hero-delay: 370ms; }
+.hero-stagger > :nth-child(n+6) { --hero-delay: 420ms; }
+.hero-enter--nav { --hero-y: -12px; }
+.hero-enter--visual { --hero-delay: 320ms; --hero-y: 28px; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter,
+  .hero-stagger > * { animation: none; }
+}
+
 /* ===== Reveal au scroll (fade + rise) — composant FadeIn ===== */
 .reveal-rise {
   opacity: 0;

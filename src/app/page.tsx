@@ -5,6 +5,8 @@ import { FadeIn } from '@/components/fade-in';
 import { SmoothScroll } from '@/components/smooth-scroll';
 import { CountUp } from '@/components/count-up';
 import { LeadCapture } from '@/components/lead-capture';
+import { ScrollMarquee } from '@/components/scroll-marquee';
+import { Magnet } from '@/components/magnet';
 import {
   DashboardMockup,
   UploadMockup,
@@ -151,7 +153,7 @@ export default function HomePage() {
       <SmoothScroll />
       {/* Header */}
       <header className="sticky top-0 z-30 -mx-0 px-0">
-        <div className="header-shell border-b bg-background/80 backdrop-blur transition-all duration-300" data-scrolled="false">
+        <div className="header-shell hero-enter hero-enter--nav border-b bg-background/80 backdrop-blur transition-all duration-300" data-scrolled="false">
           {/* Téléphone : tout tient sur une ligne dès 320 px. Le nom peut se raccourcir en dernier recours, jamais déborder. */}
           <div className="container px-3 sm:px-8 flex h-16 items-center justify-between gap-2">
             <Link href="/" className="flex items-center gap-1.5 sm:gap-2 font-bold text-[15px] sm:text-lg min-w-0">
@@ -187,8 +189,7 @@ export default function HomePage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-3xl -z-10" />
 
         <div className="max-w-6xl w-full grid lg:grid-cols-2 gap-12 items-center">
-          <FadeIn>
-            <div className="space-y-6">
+            <div className="space-y-6 hero-stagger">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
                 <Star className="h-3.5 w-3.5 fill-current" />
                 5 copies offertes, sans carte bancaire
@@ -211,12 +212,14 @@ export default function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button asChild size="lg" className="shadow-xl shadow-primary/30 text-base">
-                  <Link href="/signup">
-                    Commencer gratuitement
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Link>
-                </Button>
+                <Magnet>
+                  <Button asChild size="lg" className="shadow-xl shadow-primary/30 text-base">
+                    <Link href="/signup">
+                      Commencer gratuitement
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Link>
+                  </Button>
+                </Magnet>
                 <Button asChild size="lg" variant="outline">
                   <Link href="#how">Voir comment ça marche</Link>
                 </Button>
@@ -230,16 +233,18 @@ export default function HomePage() {
               </div>
               <p className="text-xs text-muted-foreground/70">— Marc, prof de maths en collège, Lyon</p>
             </div>
-          </FadeIn>
 
-          <FadeIn delay={200}>
+          <div className="hero-enter hero-enter--visual">
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-2xl blur-2xl -z-10" />
               <DashboardMockup />
             </div>
-          </FadeIn>
+          </div>
         </div>
       </section>
+
+      {/* Bande qui glisse avec le défilement */}
+      <ScrollMarquee />
 
       {/* Social proof bar */}
       <section className="border-y bg-secondary/30 py-8">
