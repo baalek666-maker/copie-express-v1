@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CheckCircle2, ClipboardCopy, Edit3, Loader2, FileText, RotateCw } from 'lucide-react';
+import { AlertTriangle, Check, CheckCircle2, ClipboardCopy, Compass, Edit3, Loader2, FileText, RotateCw, X } from 'lucide-react';
 import { PhotoViewer } from './photo-viewer';
 import { ConfidenceBadge } from './confidence-badge';
 import { ErrorTypeBadges, countErrorTypes, countErrorTypesAll } from './error-types';
@@ -194,7 +194,10 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
       {classErrorTotal >= 3 && (
         <div className="p-3 rounded-lg bg-secondary/50 border flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-sm font-medium">🧭 Erreurs récurrentes de la classe</p>
+            <p className="text-sm font-medium flex items-center gap-1.5">
+              <Compass className="h-4 w-4 text-primary" aria-hidden="true" />
+              Erreurs récurrentes de la classe
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {classErrorTotal} erreurs classées sur l'ensemble des copies — piste directe de remédiation.
             </p>
@@ -264,6 +267,8 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
         const isWaiting = copy.status === 'pending' && !isReading;
         const score = computeCopyScore(copy.extracted_answers, scale);
         const doubts = doubtfulCount(copy.extracted_answers, scale);
+        const showGrade = (isValidated || isReady) && score.max > 0;
+        const grade = frPoints(isValidated ? copy.final_score : score.score);
 
         return (
           <Card
@@ -272,25 +277,33 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
           >
             <CardContent className="p-4 sm:p-5">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                    isValidated ? 'bg-green-100 text-green-700' : isError ? 'bg-red-100 text-red-700' : 'bg-secondary'
-                  }`}>
-                    {isError ? <AlertTriangle className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
-                  </div>
+                {/* Sur téléphone, les boutons passent sous le nom : la ligne reste lisible. */}
+                <div className="flex items-start sm:items-center gap-3 min-w-0 basis-full sm:basis-0 sm:flex-1">
+                  {showGrade ? (
+                    <div
+                      className={`w-[4.5rem] shrink-0 rounded-lg border px-1 py-1.5 text-center ${
+                        isValidated
+                          ? 'border-green-300 bg-background dark:border-green-800'
+                          : 'border-border bg-secondary/50'
+                      }`}
+                      aria-label={`${isValidated ? 'Note validée' : 'Note proposée'} : ${grade} sur ${frPoints(score.max)}`}
+                    >
+                      <div className={`text-xl font-semibold leading-none tabular-nums tracking-tight ${isValidated ? 'text-green-700 dark:text-green-400' : ''}`}>
+                        {grade}
+                      </div>
+                      <div className="mt-1 text-[11px] leading-none text-muted-foreground tabular-nums">sur {frPoints(score.max)}</div>
+                    </div>
+                  ) : (
+                    <div className={`h-12 w-[4.5rem] rounded-lg flex items-center justify-center shrink-0 ${
+                      isError ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300' : 'bg-secondary text-muted-foreground'
+                    }`}>
+                      {isError ? <AlertTriangle className="h-5 w-5" /> : isReading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <p className="font-medium truncate">{copy.student_identifier || 'Élève'}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-0.5">
-                      {isValidated && (
-                        <span className="text-green-700 dark:text-green-400 font-medium">
-                          Note validée : {frPoints(copy.final_score)} / {frPoints(score.max)}
-                        </span>
-                      )}
-                      {isReady && score.max > 0 && (
-                        <span className="text-blue-700 dark:text-blue-300 font-medium">
-                          Note proposée : {frPoints(score.score)} / {frPoints(score.max)}
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-1">
+                      {isReady && score.max > 0 && <span>Note proposée</span>}
                       {isReady && <ErrorTypeBadges counts={countErrorTypes(copy.extracted_answers)} max={3} />}
                       {isReady && copy.confidence_score !== null && (
                         <ConfidenceBadge confidence={copy.confidence_score} />
@@ -301,10 +314,7 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
                         </span>
                       )}
                       {isReading && (
-                        <span className="flex items-center gap-1 text-amber-600">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Lecture en cours…
-                        </span>
+                        <span className="text-amber-700 dark:text-amber-300">Lecture en cours…</span>
                       )}
                       {isWaiting && <span>En attente de lecture</span>}
                       {isError && <span className="text-destructive">Lecture impossible pour le moment</span>}
@@ -312,7 +322,7 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                   {isValidated && (
                     <>
                       <Badge variant="success" className="flex items-center gap-1">
@@ -324,11 +334,11 @@ export function CopiesList({ copies, evaluationId, gradingScale, evaluationTitle
                   )}
                   {isReady && (
                     <>
-                      <Button size="sm" variant="outline" onClick={() => setEditingId(copy.id)}>
+                      <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => setEditingId(copy.id)}>
                         <Edit3 className="h-3 w-3 mr-1" />
                         Vérifier
                       </Button>
-                      <Button size="sm" onClick={() => handleValidate(copy)}>Valider</Button>
+                      <Button size="sm" className="flex-1 sm:flex-none" onClick={() => handleValidate(copy)}>Valider</Button>
                     </>
                   )}
                   {(isError || isWaiting) && (
@@ -469,7 +479,7 @@ function CopyEditorDialog({ copy, scale, evaluationTitle, onClose, onSaved }: {
                 Compare la photo et ce que le système a lu. Change ce qui doit l'être, puis valide.
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} aria-label="Fermer">✕</Button>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fermer"><X className="h-4 w-4" /></Button>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">
@@ -511,7 +521,9 @@ function CopyEditorDialog({ copy, scale, evaluationTitle, onClose, onSaved }: {
                       </div>
                       <div className="text-sm">
                         <span className="text-muted-foreground text-xs">Élève : </span>
-                        <span className="font-mono">{a.student_wrote || <em className="text-muted-foreground">(pas de réponse)</em>}</span>
+                        {a.student_wrote
+                          ? <span className="font-mono">{a.student_wrote}</span>
+                          : <span className="text-muted-foreground">pas de réponse</span>}
                       </div>
                       {a.expected && (
                         <div className="text-sm mt-1">
@@ -525,17 +537,17 @@ function CopyEditorDialog({ copy, scale, evaluationTitle, onClose, onSaved }: {
                             type="button"
                             aria-pressed={a.is_correct === true}
                             onClick={() => setCorrect(idx, true)}
-                            className={`px-3 py-1.5 text-xs font-medium ${a.is_correct ? 'bg-green-600 text-white' : 'bg-background hover:bg-secondary'}`}
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium ${a.is_correct ? 'bg-green-600 text-white' : 'bg-background hover:bg-secondary'}`}
                           >
-                            ✓ Juste
+                            <Check className="h-3 w-3" aria-hidden="true" /> Juste
                           </button>
                           <button
                             type="button"
                             aria-pressed={a.is_correct !== true}
                             onClick={() => setCorrect(idx, false)}
-                            className={`px-3 py-1.5 text-xs font-medium border-l ${!a.is_correct ? 'bg-red-600 text-white' : 'bg-background hover:bg-secondary'}`}
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium border-l ${!a.is_correct ? 'bg-red-600 text-white' : 'bg-background hover:bg-secondary'}`}
                           >
-                            ✗ Faux
+                            <X className="h-3 w-3" aria-hidden="true" /> Faux
                           </button>
                         </div>
                         {computed.weighted && max > 0 && (
@@ -564,12 +576,12 @@ function CopyEditorDialog({ copy, scale, evaluationTitle, onClose, onSaved }: {
                 )}
               </div>
 
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-900 space-y-2">
+              <div className="p-4 rounded-lg bg-secondary/60 border space-y-2">
                 <div className="flex items-end justify-between gap-3 flex-wrap">
                   <div>
-                    <div className="text-xs text-muted-foreground">Note</div>
-                    <div className="text-3xl font-bold text-blue-900 dark:text-blue-200">
-                      {frPoints(finalScore)} <span className="text-lg font-medium">/ {frPoints(computed.max) === '0' ? '—' : frPoints(computed.max)}</span>
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Note</div>
+                    <div className="mt-1 text-4xl font-semibold leading-none tracking-tight tabular-nums">
+                      {frPoints(finalScore)} <span className="text-lg font-normal text-muted-foreground">/ {frPoints(computed.max) === '0' ? '—' : frPoints(computed.max)}</span>
                     </div>
                   </div>
                   <label className="text-xs text-muted-foreground flex items-center gap-2">

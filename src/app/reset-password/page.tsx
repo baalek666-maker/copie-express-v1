@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle2 } from 'lucide-react';
 
 // Page ciblée par le mail de réinitialisation Supabase.
 // Flux : lien mail → session recovery → champ nouveau mot de passe → updateUser.
@@ -91,8 +92,9 @@ export default function ResetPasswordPage() {
         </CardHeader>
         <CardContent>
           {done ? (
-            <p className="text-center text-sm text-muted-foreground">
-              ✓ C'est fait. Tu arrive dans ton espace dans un instant.
+            <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
+              C'est fait. Tu arrives dans ton espace dans un instant.
             </p>
           ) : ready ? (
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -3,16 +3,17 @@
 // Catégories d'erreurs (feature 16/09/2026 — inspirée ed.ai)
 // Lit extracted_answers (array backend ou record legacy), agrège les error_type.
 
-import { Badge } from '@/components/ui/badge';
+import { Brain, Calculator, CircleDashed, CircleHelp, Eye, MinusCircle, Wind, type LucideIcon } from 'lucide-react';
 
-export const ERROR_CATEGORIES: Record<string, { label: string; emoji: string; color: string }> = {
-  calcul: { label: 'Calcul', emoji: '➗', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  concept: { label: 'Notion non comprise', emoji: '🧠', color: 'bg-red-100 text-red-800 border-red-200' },
-  lecture: { label: 'Énoncé mal lu', emoji: '👀', color: 'bg-amber-100 text-amber-800 border-amber-200' },
-  inattention: { label: 'Étourderie', emoji: '💨', color: 'bg-violet-100 text-violet-800 border-violet-200' },
-  incomplet: { label: 'Réponse incomplète', emoji: '✂️', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-  absence: { label: 'Pas de réponse', emoji: '🕳️', color: 'bg-gray-100 text-gray-800 border-gray-200' },
-  autre: { label: 'Autre', emoji: '❓', color: 'bg-slate-100 text-slate-800 border-slate-200' },
+// Une icône par catégorie, une seule teinte : la liste des copies reste lisible d'un coup d'œil.
+export const ERROR_CATEGORIES: Record<string, { label: string; icon: LucideIcon }> = {
+  calcul: { label: 'Calcul', icon: Calculator },
+  concept: { label: 'Notion non comprise', icon: Brain },
+  lecture: { label: 'Énoncé mal lu', icon: Eye },
+  inattention: { label: 'Étourderie', icon: Wind },
+  incomplet: { label: 'Réponse incomplète', icon: CircleDashed },
+  absence: { label: 'Pas de réponse', icon: MinusCircle },
+  autre: { label: 'Autre', icon: CircleHelp },
 };
 
 type AnswerItem = {
@@ -52,10 +53,16 @@ export function ErrorTypeBadges({ counts, max = 4 }: { counts: Record<string, nu
       {entries.map(([type, n]) => {
         const cat = ERROR_CATEGORIES[type];
         if (!cat) return null;
+        const Icon = cat.icon;
         return (
-          <Badge key={type} variant="outline" className={`text-xs font-normal ${cat.color}`}>
-            {cat.emoji} {cat.label} ×{n}
-          </Badge>
+          <span
+            key={type}
+            className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-xs text-foreground/80"
+          >
+            <Icon className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+            {cat.label}
+            <span className="tabular-nums text-muted-foreground">×{n}</span>
+          </span>
         );
       })}
     </span>

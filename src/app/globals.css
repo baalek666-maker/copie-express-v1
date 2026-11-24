@@ -61,9 +61,17 @@
 @layer base {
   * { @apply border-border; }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
   }
+  /* Titres : interlettrage resserré, lignes équilibrées (pas de mot seul en fin de titre) */
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  h1 { letter-spacing: -0.03em; }
+  p { text-wrap: pretty; }
   /* Smooth theme switch */
   html { color-scheme: light; }
   html.dark { color-scheme: dark; }
@@ -131,6 +139,19 @@ a:active {
   transform: scale(0.97);
   transition: transform var(--duration-fast) var(--ease-out);
 }
+
+/* Accent typographique : l'italique des titres. La police n'existe qu'en graisse normale,
+   on interdit donc le faux gras, et on la grossit un peu pour l'aligner sur la police de texte. */
+.font-serif {
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 1.12em;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Chiffres alignés (notes, compteurs, prix) */
+.nums { font-variant-numeric: tabular-nums; }
 
 /* Custom scrollbar */
 @layer utilities {

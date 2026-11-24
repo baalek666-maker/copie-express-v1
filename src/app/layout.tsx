@@ -5,7 +5,13 @@ import { ToastContainer } from '@/components/ui/use-toast';
 import { CommandPalette } from '@/components/command-palette';
 import { PlausibleAnalytics } from '@/components/analytics';
 import { CookieBanner } from '@/components/cookie-banner';
+import { Figtree, Instrument_Serif } from 'next/font/google';
 import './globals.css';
+
+// Polices hébergées avec le site (aucune requête vers un service tiers depuis le navigateur).
+const fontSans = Figtree({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
+const fontSerif = Instrument_Serif({ subsets: ['latin'], weight: '400', style: ['normal', 'italic'], variable: '--font-serif', display: 'swap' });
+const fontVars = `${fontSans.variable} ${fontSerif.variable}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://copie-express-v1.vercel.app'),
@@ -60,7 +66,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning className={fontVars}>
       <body>
         <ThemeProvider>
           <ToastContainer>

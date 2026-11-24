@@ -89,7 +89,7 @@ export function UploadDropzone({ evaluationId, compact = false }: { evaluationId
   };
 
   const fileIcon = (file: File) => {
-    if (file.type.startsWith('image/')) return <ImageIcon className="h-4 w-4 text-blue-500" />;
+    if (file.type.startsWith('image/')) return <ImageIcon className="h-4 w-4 text-muted-foreground" />;
     if (file.type === 'application/pdf') return <FileText className="h-4 w-4 text-red-500" />;
     return <FileText className="h-4 w-4 text-muted-foreground" />;
   };

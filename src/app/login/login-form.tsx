@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle2, MailCheck } from 'lucide-react';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -213,7 +214,7 @@ export default function LoginForm() {
           {recoveryDone ? (
             <div className="space-y-4 text-center">
               <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-900">
-                <p className="font-semibold mb-1">Mot de passe mis à jour ✓</p>
+                <p className="font-semibold mb-1 inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Mot de passe mis à jour</p>
                 <p>Redirection vers ton espace…</p>
               </div>
             </div>
@@ -260,7 +261,7 @@ export default function LoginForm() {
           ) : resetSent ? (
             <div className="space-y-4 text-center">
               <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-900">
-                <p className="font-semibold mb-1">Email envoyé ✉️</p>
+                <p className="font-semibold mb-1 inline-flex items-center gap-1.5"><MailCheck className="h-4 w-4" aria-hidden="true" /> E-mail envoyé</p>
                 <p>Clique sur le lien dans l'email pour réinitialiser ton mot de passe.</p>
               </div>
               <Button variant="outline" onClick={() => { setResetSent(false); setMode('login'); }}>

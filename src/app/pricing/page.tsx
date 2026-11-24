@@ -104,9 +104,12 @@ export default function PricingPage() {
             Tous les forfaits incluent la lecture des copies, la note proposée par copie et l'export Pronote et SACoche.
           </p>
           <div className="flex justify-center gap-x-6 gap-y-2 text-sm flex-wrap">
-            <span className="flex items-center gap-1">✓ Sans engagement</span>
-            <span className="flex items-center gap-1">✓ Résiliable depuis ton compte</span>
-            <span className="flex items-center gap-1">✓ Données hébergées en Europe</span>
+            {['Sans engagement', 'Résiliable depuis ton compte', 'Données hébergées en Europe'].map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
+                {item}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -114,7 +117,7 @@ export default function PricingPage() {
           {tiers.map((tier) => (
             <Card key={tier.name} className={tier.highlight ? 'border-primary border-2 relative' : ''}>
               {tier.highlight && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2" variant="default">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap" variant="default">
                   Le plus avantageux
                 </Badge>
               )}
@@ -122,7 +125,7 @@ export default function PricingPage() {
                 <CardTitle>{tier.name}</CardTitle>
                 <CardDescription>{tier.description}</CardDescription>
                 <div className="pt-2">
-                  <span className="text-3xl font-bold">{tier.price}</span>
+                  <span className="text-3xl font-bold tracking-tight tabular-nums">{tier.price}</span>
                   <span className="text-sm text-muted-foreground">{tier.period}</span>
                 </div>
               </CardHeader>
