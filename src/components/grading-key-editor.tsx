@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { backendFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, CheckCircle2, Edit3, Loader2, FileText, AlertCircle } from 'lucide-react';
-import { getBackendUrl } from '@/lib/backend-url';
 
 export function GradingKeyEditor({
   evaluationId,
@@ -16,7 +15,6 @@ export function GradingKeyEditor({
   initialGradingKey: string | null;
 }) {
   const router = useRouter();
-  const supabase = createBrowserSupabase();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,31 +23,16 @@ export function GradingKeyEditor({
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non connecté');
-
       const formData = new FormData();
       formData.append('file', file);
       formData.append('evaluationId', evaluationId);
-      formData.append('userId', user.id);
 
-      const backendUrl = getBackendUrl();
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-      if (!accessToken) throw new Error('Session expirée — reconnecte-toi');
-
-      const response = await fetch(`${backendUrl}/api/grading-key`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error('Upload failed');
+      await backendFetch('/api/grading-key', { method: 'POST', body: formData });
 
       setUploading(false);
       router.refresh();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'L’envoi du corrigé a échoué. Réessaie.');
       setUploading(false);
     }
   };
@@ -61,7 +44,7 @@ export function GradingKeyEditor({
           <CardTitle className="flex items-center justify-between text-base">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Photo du barème uploadée
+              Barème prêt
             </span>
             <Button
               size="sm"
@@ -70,11 +53,11 @@ export function GradingKeyEditor({
               disabled={uploading}
             >
               <Edit3 className="h-3 w-3 mr-1" />
-              {uploading ? 'Upload...' : 'Remplacer'}
+              {uploading ? 'Envoi…' : 'Remplacer par un corrigé'}
             </Button>
           </CardTitle>
           <CardDescription>
-            Le système utilise cette photo pour proposer une note. Remplace-la si besoin.
+            Le système s'appuie sur ce barème pour proposer une note par copie.
           </CardDescription>
         </CardHeader>
         <input
@@ -96,29 +79,29 @@ export function GradingKeyEditor({
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          Photo du barème <span className="text-sm font-normal text-muted-foreground">(optionnel mais recommandé)</span>
+          Ou : ton corrigé <span className="text-sm font-normal text-muted-foreground">(si tu en as déjà un)</span>
         </CardTitle>
         <CardDescription>
-          Prends en photo ton corrigé type. Le système lira les bonnes réponses et proposera une note par copie.
+          Dépose ton corrigé type : le système y lit les bonnes réponses. Chaque réponse juste compte alors 1 point ; pour des points par question, utilise le barème express.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div
-          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
           onClick={() => !uploading && document.getElementById('grading-key-input')?.click()}
         >
           {uploading ? (
             <>
               <Loader2 className="h-10 w-10 mx-auto text-primary mb-3 animate-spin" />
-              <p className="text-sm font-medium">Extraction en cours...</p>
-              <p className="text-xs text-muted-foreground mt-1">On lit ton barème, ça prend ~10 sec</p>
+              <p className="text-sm font-medium">Lecture du corrigé…</p>
+              <p className="text-xs text-muted-foreground mt-1">Une dizaine de secondes</p>
             </>
           ) : (
             <>
               <Camera className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-sm font-medium mb-1">📸 Prends en photo ton corrigé type</p>
+              <p className="text-sm font-medium mb-1">Prends ton corrigé en photo, ou choisis le fichier</p>
               <p className="text-xs text-muted-foreground">
-                Photo du corrigé, scan, PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx)
+                Photo, scan, PDF, Word, Excel ou PowerPoint
               </p>
             </>
           )}
@@ -143,7 +126,7 @@ export function GradingKeyEditor({
         )}
 
         <p className="text-xs text-muted-foreground mt-3">
-          💡 Sans barème, le système extrait quand même les réponses des élèves, mais tu notes toi-même.
+          Sans barème, chaque réponse juste compte 1 point : tu ajustes la note au moment de valider.
         </p>
       </CardContent>
     </Card>

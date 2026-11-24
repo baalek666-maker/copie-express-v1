@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { backendFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, CheckCircle2, Edit3, Loader2, FileText, AlertCircle } from 'lucide-react';
-import { getBackendUrl } from '@/lib/backend-url';
 
 export function SubjectUploader({
   evaluationId,
@@ -16,7 +15,6 @@ export function SubjectUploader({
   existingSubjectPath: string | null;
 }) {
   const router = useRouter();
-  const supabase = createBrowserSupabase();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -27,31 +25,11 @@ export function SubjectUploader({
     setSuccess(false);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non connecté');
-
       const formData = new FormData();
       formData.append('file', file);
       formData.append('evaluationId', evaluationId);
-      formData.append('userId', user.id);
 
-      const backendUrl = getBackendUrl();
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-      if (!accessToken) throw new Error('Session expirée — reconnecte-toi');
-
-      const response = await fetch(`${backendUrl}/api/subject`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Erreur ${response.status}`);
-      }
-
-      const result = await response.json();
+      await backendFetch('/api/subject', { method: 'POST', body: formData });
 
       // Afficher succès immédiatement
       setSuccess(true);
@@ -62,7 +40,7 @@ export function SubjectUploader({
         setSuccess(false);
       }, 1500);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'upload');
+      setError(err.message || 'L’envoi du sujet a échoué. Réessaie.');
       setUploading(false);
     }
   };
@@ -74,7 +52,7 @@ export function SubjectUploader({
           <CardTitle className="flex items-center justify-between text-base">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Photo du sujet uploadée
+              Sujet déposé
             </span>
             <Button
               size="sm"
@@ -83,11 +61,11 @@ export function SubjectUploader({
               disabled={uploading}
             >
               <Edit3 className="h-3 w-3 mr-1" />
-              {uploading ? 'Upload...' : 'Remplacer'}
+              {uploading ? 'Envoi…' : 'Remplacer'}
             </Button>
           </CardTitle>
           <CardDescription>
-            L'extraction utilise cette photo comme contexte. Remplace-la si besoin.
+            Le système s'appuie sur ce sujet pour lire les copies. Remplace-le si besoin.
           </CardDescription>
         </CardHeader>
         <input
@@ -109,29 +87,29 @@ export function SubjectUploader({
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          Photo du sujet <span className="text-sm font-normal text-muted-foreground">(optionnel)</span>
+          Le sujet <span className="text-sm font-normal text-muted-foreground">(facultatif, conseillé)</span>
         </CardTitle>
         <CardDescription>
-          Si les questions sont sur une feuille séparée des copies, prends-les en photo ici.
+          Avec le sujet, le système sait quelles questions chercher sur chaque copie.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div
-          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
           onClick={() => !uploading && document.getElementById('subject-input')?.click()}
         >
           {uploading ? (
             <>
               <Loader2 className="h-10 w-10 mx-auto text-primary mb-3 animate-spin" />
-              <p className="text-sm font-medium">Extraction en cours...</p>
-              <p className="text-xs text-muted-foreground mt-1">On lit ta photo, ça prend ~10 sec</p>
+              <p className="text-sm font-medium">Envoi en cours…</p>
+              <p className="text-xs text-muted-foreground mt-1">Quelques secondes</p>
             </>
           ) : (
             <>
               <Camera className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-sm font-medium mb-1">📸 Prends en photo le sujet du contrôle</p>
+              <p className="text-sm font-medium mb-1">Prends le sujet en photo, ou choisis le fichier</p>
               <p className="text-xs text-muted-foreground">
-                Photo, scan, PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx)
+                Photo, scan, PDF, Word, Excel ou PowerPoint
               </p>
             </>
           )}
@@ -158,7 +136,7 @@ export function SubjectUploader({
         {success && (
           <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-900 mt-3 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
-            Sujet uploadé avec succès ! La page va se rafraîchir...
+            Sujet déposé.
           </div>
         )}
       </CardContent>

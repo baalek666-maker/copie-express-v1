@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/button';
 import { Trash2, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Suppression d'évaluation avec confirmation (2 clics).
 // La DB a ON DELETE CASCADE sur copies/exports : tout est purgé.
@@ -20,7 +21,7 @@ export function DeleteEvaluationButton({ evaluationId }: { evaluationId: string 
     if (error) {
       setDeleting(false);
       setConfirming(false);
-      alert('Suppression impossible : ' + error.message);
+      toast.error('La suppression a échoué. Vérifie ta connexion et réessaie.');
       return;
     }
     router.push('/app');
@@ -38,9 +39,9 @@ export function DeleteEvaluationButton({ evaluationId }: { evaluationId: string 
 
   if (confirming) {
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap">
         <Button variant="destructive" size="sm" onClick={handleDelete}>
-          Confirmer
+          Supprimer l'évaluation et ses copies
         </Button>
         <Button variant="ghost" size="sm" onClick={() => setConfirming(false)}>
           Annuler

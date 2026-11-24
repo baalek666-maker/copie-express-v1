@@ -1,3 +1,7 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Mentions légales', alternates: { canonical: '/legal/mentions' } };
+
 export const dynamic = 'force-static';
 
 export default function MentionsLegalesPage() {
@@ -6,13 +10,13 @@ export default function MentionsLegalesPage() {
       <div className="max-w-3xl mx-auto p-8">
         <a href="/" className="text-sm text-muted-foreground hover:text-foreground">← Retour</a>
         <h1>Mentions Légales — Copie Express</h1>
-        <p><strong>Dernière mise à jour :</strong> 30 juillet 2026</p>
+        <p><strong>Dernière mise à jour :</strong> 24 novembre 2026</p>
 
         <h2>Éditeur du site</h2>
         <p><strong>Copie Express</strong><br />
         Auto-entreprise en cours d&apos;immatriculation<br />
         Siège social : [à compléter]<br />
-        Email : contact@copie-express.fr<br />
+        Contact : <a href="/contact" className="underline">le formulaire de contact</a><br />
         Numéro SIRET : [à compléter après immatriculation]<br />
         Numéro de TVA intracommunautaire : non applicable (auto-entreprise)</p>
 
@@ -32,7 +36,7 @@ export default function MentionsLegalesPage() {
 
         <h2>Données personnelles</h2>
         <p>Le traitement des données personnelles est détaillé dans notre <a href="/legal/privacy" className="underline">Politique de Confidentialité</a>.</p>
-        <p>Vous disposez d&apos;un droit d&apos;accès, de rectification, d&apos;effacement et de portabilité de vos données. Pour exercer ces droits : dpo@copie-express.fr</p>
+        <p>Vous disposez d&apos;un droit d&apos;accès, de rectification, d&apos;effacement et de portabilité de vos données. Pour exercer ces droits : <a href="/contact?sujet=donnees" className="underline">le formulaire de contact</a></p>
 
         <h2>Cookies</h2>
         <p>Le site utilise uniquement des cookies strictement nécessaires à l&apos;authentification. Aucun cookie publicitaire ou tracker tiers.</p>
@@ -45,7 +49,7 @@ export default function MentionsLegalesPage() {
         <p>Le présent site est soumis au droit français. En cas de litige, les tribunaux français seront seuls compétents.</p>
 
         <h2>Contact</h2>
-        <p>Pour toute demande : contact@copie-express.fr</p>
+        <p>Pour toute demande : <a href="/contact" className="underline">le formulaire de contact</a></p>
       </div>
     </main>
   );

@@ -12,17 +12,17 @@ const steps = [
   {
     icon: FileText,
     title: 'Crée ton évaluation',
-    desc: 'Titre, matière, niveau. 10 secondes.',
+    desc: 'Un titre, une matière, un niveau. Dix secondes.',
   },
   {
     icon: Upload,
-    title: 'Upload tes copies',
-    desc: 'Photos depuis ton téléphone. JPEG, PDF, Word acceptés.',
+    title: 'Dépose tes copies',
+    desc: 'En photo depuis ton téléphone, ou en PDF. Une copie par fichier.',
   },
   {
     icon: CheckCircle2,
     title: 'Le système propose, tu valides',
-    desc: 'Note suggérée question par question. Tu valides en 1 clic.',
+    desc: 'Une note proposée par copie, question par question. Tu corriges si besoin, puis tu exportes vers Pronote ou SACoche.',
   },
 ];
 
@@ -50,7 +50,7 @@ export function Onboarding() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-label="Bienvenue sur Copie Express">
       <Card className="max-w-md w-full relative animate-scale-in">
         <Button
           variant="ghost"
@@ -64,8 +64,8 @@ export function Onboarding() {
 
         <CardContent className="p-8 space-y-6">
           <div className="space-y-1 text-center">
-            <h2 className="text-2xl font-bold">Bienvenue sur Copie Express ! 🎉</h2>
-            <p className="text-sm text-muted-foreground">3 étapes, c'est tout.</p>
+            <h2 className="text-2xl font-bold">Bienvenue sur Copie Express</h2>
+            <p className="text-sm text-muted-foreground">Trois étapes. Tes 5 premières copies sont offertes.</p>
           </div>
 
           <div className="space-y-4">
@@ -87,12 +87,12 @@ export function Onboarding() {
             })}
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClose} className="flex-1">
+          <div className="flex flex-col-reverse sm:flex-row gap-2">
+            <Button variant="outline" onClick={handleClose} className="sm:flex-1">
               Plus tard
             </Button>
-            <Button onClick={handleStart} className="flex-1">
-              Je crée ma première évaluation
+            <Button onClick={handleStart} className="sm:flex-1">
+              Créer ma première évaluation
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>

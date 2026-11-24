@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, BarChart3, Plus, Menu, X, TrendingUp, Gift } from 'lucide-react';
+import { LogOut, User, FileText, History, Plus, Menu, X, TrendingUp, Gift } from 'lucide-react';
 import { useEffect } from 'react';
 
 export function AppHeader() {
@@ -32,12 +32,12 @@ export function AppHeader() {
 
   const navItems = user
     ? [
-        { href: '/app', label: 'Évaluations', icon: BarChart3 },
-        { href: '/app/stats', label: 'Stats', icon: TrendingUp },
+        { href: '/app', label: 'Évaluations', icon: FileText },
+        { href: '/app/stats', label: 'Résultats', icon: TrendingUp },
         { href: '/app/new', label: 'Nouvelle', icon: Plus },
-        { href: '/app/usage', label: 'Usage', icon: BarChart3 },
+        { href: '/app/usage', label: 'Activité', icon: History },
         { href: '/app/account', label: 'Compte', icon: User },
-        { href: '/app/referral', label: 'Parrainage', icon: Gift },
+        { href: '/app/referral', label: 'Recommander', icon: Gift },
       ]
     : [];
 
@@ -58,6 +58,7 @@ export function AppHeader() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? 'page' : undefined}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
                   active
                     ? 'bg-primary/10 text-primary'

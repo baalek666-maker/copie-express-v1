@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createServerSupabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -5,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { EmptyEvaluationsIllustration } from '@/components/illustrations';
 import { FadeIn } from '@/components/fade-in';
-import { Plus, FileText, Clock, CheckCircle2, Zap, TrendingUp, ArrowRight, Gift } from 'lucide-react';
-import { OnboardingWizard } from '@/components/onboarding-wizard';
+import { Plus, FileText, Clock, CheckCircle2, Zap, TrendingUp, ArrowRight } from 'lucide-react';
+import { planFromUser } from '@/lib/plan';
+import { subjectLabel, levelLabel } from '@/lib/labels';
+
+export const metadata: Metadata = { title: 'Mes évaluations' };
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +27,7 @@ export default async function AppDashboardPage() {
 
   const { data: userData } = await supabase
     .from('users')
-    .select('trial_copies_count, subscription_status, subscription_plan, monthly_copy_count')
+    .select('trial_copies_count')
     .eq('id', user.id)
     .single();
 
@@ -33,12 +37,14 @@ export default async function AppDashboardPage() {
   ) || 0;
   const timeSavedMin = totalCopiesValidated * 3;
 
-  const trialProgress = userData?.subscription_status === 'active'
-    ? null
-    : { used: userData?.trial_copies_count || 0, max: 10 };
+  const account = planFromUser(user, userData?.trial_copies_count || 0);
+  const quotaPct = account.limit > 0 ? Math.min(100, (account.used / account.limit) * 100) : 0;
+  const toValidate = evaluations?.reduce(
+    (sum, e) => sum + (e.copies?.filter((c: any) => c.status === 'ready_to_validate' && !c.validated_by_user).length || 0), 0
+  ) || 0;
 
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-8">
       <FadeIn>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
@@ -46,6 +52,7 @@ export default async function AppDashboardPage() {
             <p className="text-muted-foreground mt-1">
               {evaluations?.length || 0} évaluation{(evaluations?.length || 0) > 1 ? 's' : ''} ·{' '}
               {totalCopiesValidated} / {totalCopiesUploaded} copies validées
+              {toValidate > 0 ? ` · ${toValidate} à valider` : ''}
             </p>
           </div>
           <Button asChild size="lg" className="shadow-lg shadow-primary/20">
@@ -64,7 +71,7 @@ export default async function AppDashboardPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
             <CardHeader className="pb-2 relative">
               <CardDescription className="flex items-center gap-1.5">
-                <Zap className="h-3.5 w-3.5" /> Temps économisé
+                <Zap className="h-3.5 w-3.5" /> Temps gagné (estimation)
               </CardDescription>
               <CardTitle className="text-3xl font-bold text-primary">
                 {Math.round(timeSavedMin / 60)}h {timeSavedMin % 60}min
@@ -72,7 +79,7 @@ export default async function AppDashboardPage() {
             </CardHeader>
             <CardContent className="relative">
               <p className="text-xs text-muted-foreground">
-                {totalCopiesValidated} copies validées · 3 min/copie gagnées
+                {totalCopiesValidated} copie{totalCopiesValidated > 1 ? 's' : ''} validée{totalCopiesValidated > 1 ? 's' : ''} · base : 3 min par copie
               </p>
             </CardContent>
           </Card>
@@ -82,48 +89,41 @@ export default async function AppDashboardPage() {
               <CardDescription className="flex items-center gap-1.5">
                 <TrendingUp className="h-3.5 w-3.5" /> Mon forfait
               </CardDescription>
-              <CardTitle className="text-xl">
-                {userData?.subscription_status === 'active'
-                  ? (userData.subscription_plan || 'Standard')
-                  : 'Découverte'}
-              </CardTitle>
+              <CardTitle className="text-xl">{account.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              {trialProgress && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Trial</span>
-                    <span className="font-medium">{trialProgress.used}/{trialProgress.max}</span>
-                  </div>
-                  <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-orange-500 transition-colors duration-200 ease-out"
-                      style={{ width: `${(trialProgress.used / trialProgress.max) * 100}%` }}
-                    />
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
-                    <Link href="/pricing">Passer Pro →</Link>
-                  </Button>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {account.paid ? 'Copies lues ce mois-ci' : 'Copies d’essai utilisées'}
+                  </span>
+                  <span className="font-medium">{account.used} / {account.limit}</span>
                 </div>
-              )}
-              {userData?.subscription_status === 'active' && (
-                <p className="text-sm text-green-700 dark:text-green-400 font-medium flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4" /> Abonnement actif
-                </p>
-              )}
+                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-orange-500"
+                    style={{ width: `${quotaPct}%` }}
+                  />
+                </div>
+                {!account.paid && (
+                  <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
+                    <Link href="/pricing">Voir les forfaits</Link>
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5" /> Copies traitées
+                <FileText className="h-3.5 w-3.5" /> Copies validées
               </CardDescription>
               <CardTitle className="text-3xl font-bold">{totalCopiesValidated}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground">
-                Supprimées sous 30 jours (RGPD)
+                Photos supprimées après 30 jours
               </p>
             </CardContent>
           </Card>
@@ -139,7 +139,7 @@ export default async function AppDashboardPage() {
               <div>
                 <h2 className="text-2xl font-semibold">Pas encore d'évaluation</h2>
                 <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                  Crée ta première évaluation. Upload tes copies. Valide en 30 secondes par copie.
+                  Crée ta première évaluation, dépose tes copies, puis vérifie et valide les notes proposées.
                 </p>
               </div>
               <div className="flex justify-center">
@@ -168,6 +168,7 @@ export default async function AppDashboardPage() {
               const copies = evaluation.copies || [];
               const validated = copies.filter((c: any) => c.validated_by_user).length;
               const total = copies.length;
+              const pending = copies.filter((c: any) => c.status === 'ready_to_validate' && !c.validated_by_user).length;
               const progress = total > 0 ? (validated / total) * 100 : 0;
               const isComplete = validated === total && total > 0;
 
@@ -186,7 +187,8 @@ export default async function AppDashboardPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{evaluation.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {evaluation.subject} · {evaluation.class_level}
+                          {[subjectLabel(evaluation.subject), levelLabel(evaluation.class_level)].filter(Boolean).join(' · ')}
+                          {pending > 0 ? ` · ${pending} à valider` : ''}
                         </p>
                         {total > 0 && (
                           <div className="mt-1.5 h-1 bg-secondary rounded-full overflow-hidden w-32">
@@ -203,6 +205,8 @@ export default async function AppDashboardPage() {
                             <CheckCircle2 className="h-3 w-3" />
                             Terminée
                           </Badge>
+                        ) : total === 0 ? (
+                          <Badge variant="secondary">À démarrer</Badge>
                         ) : (
                           <Badge variant="secondary" className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -218,7 +222,6 @@ export default async function AppDashboardPage() {
           </div>
         </FadeIn>
       )}
-      <OnboardingWizard />
     </div>
   );
 }

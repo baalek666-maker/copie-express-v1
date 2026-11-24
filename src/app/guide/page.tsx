@@ -3,16 +3,16 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Guide enseignant — Bien démarrer avec Copie Express',
+  title: 'Guide enseignant',
   description: 'Pas à pas : préparer son sujet, photographier les copies, valider les notes, exporter vers SACoche ou Pronote.',
 };
 
 const STEPS: { n: string; title: string; body: string }[] = [
   { n: '1', title: 'Crée ton évaluation', body: 'Depuis ton espace, « Nouvelle évaluation ». Donne-lui un titre (ex. « Contrôle fractions 4eB »). Tout le travail de l\'année reste organisé par évaluation.' },
   { n: '2', title: 'Dépose le sujet (2 minutes)', body: 'Photo ou PDF du sujet. Copie Express en extrait les questions, le barème et les savoir-faire. Tout est modifiable : ajuste les points, change un intitulé, puis valide. Ce barème servira à toute la classe.' },
-  { n: '3', title: 'Photographie les copies', body: 'Prends les copies une par une ou la pile entière — jusqu\'à 100 photos. Encadré bien, lumière suffisante, pas d\'ombre portée. Le détail des bonnes pratiques photo est rappelé à l\'upload.' },
+  { n: '3', title: 'Photographie les copies', body: 'Une photo (ou un fichier) par copie, jusqu\'à 100 par dépôt. Bien cadrée, à plat, avec assez de lumière et sans ombre portée. Les conseils photo sont rappelés au moment du dépôt. Le nom de l\'élève écrit sur la copie est repris quand il est lisible ; tu peux le corriger.' },
   { n: '4', title: 'Relis, ajuste, valide', body: 'Pour chaque copie : les réponses lues, la note proposée, les erreurs classées par type (calcul, notion non comprise, étourderie…). Tu corriges ce qui te semble injuste, puis tu valides. La note finale est la tienne.' },
-  { n: '5', title: 'Exporte tes notes', body: 'CSV, SACoche ou Pronote, au format attendu par ton logiciel — import en 2 clics. Le bilan détaillé de chaque élève est imprimable pour la remise des copies ou les réunions parents-profs.' },
+  { n: '5', title: 'Exporte tes notes', body: 'Un fichier pour Pronote ou pour SACoche, classé par nom d\'élève, ou le bouton « Copier les notes » pour les coller dans ton tableur. Le bilan détaillé de chaque élève est imprimable pour la remise des copies ou les réunions parents-profs.' },
 ];
 
 const FAQ = [

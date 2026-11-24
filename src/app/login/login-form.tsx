@@ -46,6 +46,12 @@ export default function LoginForm() {
     if (isNew) setMode('signup');
   }, [isNew]);
 
+  // Adresse saisie sur la page d'accueil : on la reprend ici
+  useEffect(() => {
+    const prefill = searchParams.get('email');
+    if (prefill) setEmail((current) => current || prefill);
+  }, [searchParams]);
+
   // Détection du lien de réinitialisation (query ?code= ou hash type=recovery),
   // quel que soit l'endroit où le mail atterrit.
   useEffect(() => {
@@ -93,7 +99,7 @@ export default function LoginForm() {
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
     setLoading(false);
     if (updateError) {
-      setError(updateError.message);
+      setError('Le mot de passe n’a pas pu être modifié. Redemande un lien et réessaie.');
       return;
     }
     setRecoveryDone(true);
@@ -132,7 +138,7 @@ export default function LoginForm() {
       const result = await res.json();
 
       if (!res.ok) {
-        setError(result.error || 'Erreur lors de la creation du compte.');
+        setError(result.error || 'Le compte n’a pas pu être créé. Réessaie.');
       } else if (result.session?.access_token) {
         // Set session directly from API response (instant login)
         const { error: sessionError } = await supabase.auth.setSession({
@@ -140,7 +146,7 @@ export default function LoginForm() {
           refresh_token: result.session.refresh_token,
         });
         if (sessionError) {
-          setError('Session echouee. Reessaie de te connecter.');
+          setError('Compte créé. Connecte-toi avec tes identifiants.');
         } else {
           router.push(plan ? `/app/billing?plan=${plan}` : '/app');
           router.refresh();
@@ -149,7 +155,7 @@ export default function LoginForm() {
         // Fallback: try to sign in client-side
         const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
         if (loginError) {
-          setError('Compte cree mais connexion echouee. Reessaie.');
+          setError('Compte créé. Connecte-toi avec tes identifiants.');
         } else {
           router.push(plan ? `/app/billing?plan=${plan}` : '/app');
           router.refresh();
@@ -158,7 +164,7 @@ export default function LoginForm() {
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setError('Email ou mot de passe incorrect.');
+        setError('Adresse e-mail ou mot de passe incorrect.');
       } else {
         router.push(plan ? `/app/billing?plan=${plan}` : '/app');
         router.refresh();
@@ -179,7 +185,7 @@ export default function LoginForm() {
     });
 
     if (error) {
-      setError(error.message);
+      setError('L’e-mail n’a pas pu être envoyé. Vérifie l’adresse et réessaie dans quelques minutes.');
     } else {
       setResetSent(true);
     }
@@ -197,10 +203,10 @@ export default function LoginForm() {
           </CardTitle>
           <CardDescription>
             {mode === 'signup'
-              ? '5 copies gratuites, sans carte bancaire.'
+              ? '5 copies offertes, sans carte bancaire.'
               : mode === 'reset'
-              ? 'On t\'envoie un lien par email pour réinitialiser ton mot de passe.'
-              : 'Connecte-toi avec ton email et ton mot de passe.'}
+              ? 'On t\'envoie un lien par e-mail pour choisir un nouveau mot de passe.'
+              : 'Connecte-toi avec ton adresse e-mail et ton mot de passe.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -268,7 +274,7 @@ export default function LoginForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="prenom.nom@ac-xxx.fr"
+                  placeholder="prenom.nom@ac-academie.fr"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -304,7 +310,7 @@ export default function LoginForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="prenom.nom@ac-xxx.fr"
+                  placeholder="prenom.nom@ac-academie.fr"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -388,7 +394,7 @@ export default function LoginForm() {
                       onClick={() => setMode('signup')}
                       className="text-primary hover:underline font-medium"
                     >
-                      Créer un compte (5 copies gratuites)
+                      Créer un compte (5 copies offertes)
                     </button>
                   </>
                 )}

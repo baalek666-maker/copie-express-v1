@@ -39,7 +39,7 @@ export default async function Image() {
             marginBottom: '40px',
           }}
         >
-          ★ 10 copies gratuites, sans carte bancaire
+          ★ 5 copies offertes, sans carte bancaire
         </div>
 
         {/* Main title */}

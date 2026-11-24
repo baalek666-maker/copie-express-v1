@@ -1,3 +1,7 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Politique de confidentialité', alternates: { canonical: '/legal/privacy' } };
+
 export const dynamic = 'force-static';
 
 export default function PrivacyPage() {
@@ -6,29 +10,26 @@ export default function PrivacyPage() {
       <div className="max-w-3xl mx-auto p-8">
         <a href="/" className="text-sm text-muted-foreground hover:text-foreground">← Retour</a>
         <h1>Politique de Confidentialité — Copie Express</h1>
-        <p><strong>Dernière mise à jour :</strong> 30 juillet 2026</p>
+        <p><strong>Dernière mise à jour :</strong> 24 novembre 2026</p>
 
         <p>Cette politique de confidentialité décrit comment Copie Express collecte, utilise et protège les données personnelles de ses utilisateurs, conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi française Informatique et Libertés.</p>
 
         <h2>1. Responsable du traitement</h2>
         <p><strong>Copie Express</strong> (auto-entreprise en cours d&apos;immatriculation)<br />
-        Email DPO : dpo@copie-express.fr<br />
-        Contact : contact@copie-express.fr</p>
+        Protection des données : <a href="/contact?sujet=donnees" className="underline">le formulaire de contact</a><br />
+        Contact : <a href="/contact" className="underline">le formulaire de contact</a></p>
 
         <h2>2. Données collectées</h2>
         <p>Nous collectons les données suivantes :</p>
         <h3>Données d&apos;inscription</h3>
         <ul>
-          <li>Email professionnel (obligatoire)</li>
-          <li>Nom complet (obligatoire)</li>
-          <li>Académie d&apos;affectation (obligatoire)</li>
-          <li>Matière(s) enseignée(s) (obligatoire)</li>
-          <li>Niveau(x) scolaire(s) (obligatoire)</li>
+          <li>Adresse e-mail (obligatoire)</li>
+          <li>Mot de passe (conservé sous forme hachée, jamais lisible)</li>
         </ul>
         <h3>Données d&apos;usage du service</h3>
         <ul>
           <li>Évaluations créées (titre, type, matière, barème)</li>
-          <li>Photos de copies d&apos;élèves uploadées</li>
+          <li>Photos de copies d&apos;élèves déposées par l&apos;enseignant</li>
           <li>Texte extrait des copies par notre système de reconnaissance</li>
           <li>Réponses des élèves lues et relevées</li>
           <li>Notes finales validées par l&apos;enseignant</li>
@@ -37,7 +38,6 @@ export default function PrivacyPage() {
         <h3>Données techniques</h3>
         <ul>
           <li>Adresse IP (à des fins de sécurité)</li>
-          <li>Fingerprint navigateur (mesures anti-abus)</li>
           <li>Logs d&apos;accès au service</li>
         </ul>
         <h3>Données de paiement</h3>
@@ -65,23 +65,27 @@ export default function PrivacyPage() {
 
         <h2>5. Sous-traitants et transferts de données</h2>
         <p>Vos données sont hébergées chez les sous-traitants suivants :</p>
+        <div className="overflow-x-auto">
         <table>
           <thead>
             <tr><th>Sous-traitant</th><th>Service</th><th>Localisation</th><th>Garanties</th></tr>
           </thead>
           <tbody>
-            <tr><td>Supabase Inc.</td><td>Base de données, authentification, stockage fichiers</td><td>Frankfurt, UE (Irlande par défaut)</td><td>DPO, DPA signé, hébergement UE</td></tr>
+            <tr><td>Supabase Inc.</td><td>Base de données, authentification, stockage fichiers</td><td>Irlande (Union européenne)</td><td>DPO, DPA signé, hébergement UE</td></tr>
             <tr><td>Vercel Inc.</td><td>Hébergement du site web</td><td>Edge network mondial (US, EU, Asie)</td><td>DPA, chiffrement TLS</td></tr>
             <tr><td>Prestataire d&apos;extraction (UE)</td><td>Lecture des réponses sur les copies</td><td>France (UE)</td><td>Pas de conservation des données, DPA</td></tr>
+            <tr><td>Cloudflare</td><td>Acheminement chiffré des échanges avec le serveur de traitement</td><td>Réseau mondial</td><td>DPA, chiffrement TLS, pas de conservation des contenus</td></tr>
             <tr><td>Resend</td><td>Envoi d&apos;emails transactionnels</td><td>US (siège), edge network mondial</td><td>DPA, transfert via Standard Contractual Clauses</td></tr>
             <tr><td>Stripe</td><td>Paiement en ligne</td><td>US (siège), hébergement UE</td><td>PCI-DSS niveau 1, DPA signé</td></tr>
           </tbody>
         </table>
+        </div>
         <p><strong>Aucun transfert de données vers des pays tiers sans garanties appropriées</strong> (clauses contractuelles types de la Commission européenne).</p>
 
         <h2>6. Durée de conservation</h2>
         <ul>
-          <li><strong>Photos de copies et texte extrait :</strong> 30 jours après la création de l&apos;évaluation (supprimées après 30 jours)</li>
+          <li><strong>Photos de copies, texte lu et réponses des élèves :</strong> supprimés 30 jours après le dépôt de la copie. La suppression est exécutée par le service lui-même, plusieurs fois par jour.</li>
+          <li><strong>Suppression immédiate :</strong> l&apos;enseignant peut supprimer une évaluation (et ses copies) ou son compte entier à tout moment depuis son espace.</li>
           <li><strong>Évaluations et barèmes :</strong> tant que le compte est actif</li>
           <li><strong>Notes finales validées :</strong> tant que le compte est actif (export recommandé par l&apos;enseignant)</li>
           <li><strong>Données de compte :</strong> tant que le compte est actif + 3 ans après suppression (obligation comptable)</li>
@@ -101,7 +105,7 @@ export default function PrivacyPage() {
           <li><strong>Droit de retrait du consentement</strong> : pour les traitements basés sur le consentement</li>
           <li><strong>Droit d&apos;introduire une réclamation</strong> auprès de la CNIL (Commission Nationale de l&apos;Informatique et des Libertés)</li>
         </ul>
-        <p>Pour exercer ces droits : <strong>dpo@copie-express.fr</strong>. Réponse sous 1 mois.</p>
+        <p>Pour exercer ces droits : <a href="/contact?sujet=donnees" className="underline">le formulaire de contact</a>. Réponse sous 1 mois.</p>
 
         <h2>8. Sécurité des données</h2>
         <p>Nous mettons en œuvre les mesures techniques et organisationnelles appropriées pour protéger vos données :</p>
@@ -109,9 +113,9 @@ export default function PrivacyPage() {
           <li>Chiffrement TLS pour toutes les communications</li>
           <li>Chiffrement at rest des données (Supabase)</li>
           <li>Row Level Security (RLS) sur toutes les tables de la base de données</li>
-          <li>Authentification forte par lien magique à expiration</li>
+          <li>Authentification par adresse e-mail et mot de passe (mot de passe haché)</li>
           <li>Buckets de stockage privés avec policies d&apos;accès strictes</li>
-          <li>Mesures anti-abus (quota, fingerprint, détection de patterns)</li>
+          <li>Mesures anti-abus (quotas, limites de débit)</li>
           <li>Sauvegardes quotidiennes</li>
           <li>Audits de sécurité réguliers</li>
         </ul>
@@ -126,7 +130,7 @@ export default function PrivacyPage() {
           <li>Aucune copie n&apos;est utilisée pour entraîner des modèles</li>
           <li>Aucune copie n&apos;est partagée avec des tiers</li>
           <li>Suppression des copies après 30 jours</li>
-          <li>Hébergement exclusif en UE (Supabase Frankfurt)</li>
+          <li>Stockage des copies dans l&apos;Union européenne (Irlande)</li>
         </ul>
 
         <h2>11. Modifications de cette politique</h2>
@@ -135,8 +139,8 @@ export default function PrivacyPage() {
         <h2>12. Contact</h2>
         <p>Pour toute question relative à cette politique ou à vos données personnelles :</p>
         <ul>
-          <li><strong>DPO</strong> : dpo@copie-express.fr</li>
-          <li><strong>Support</strong> : contact@copie-express.fr</li>
+          <li><strong>Protection des données</strong> : <a href="/contact?sujet=donnees" className="underline">le formulaire de contact</a></li>
+          <li><strong>Aide</strong> : <a href="/contact" className="underline">le formulaire de contact</a></li>
           <li><strong>CNIL</strong> : www.cnil.fr (en cas de réclamation)</li>
         </ul>
 

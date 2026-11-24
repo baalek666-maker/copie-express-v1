@@ -1,285 +1,198 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { createBrowserSupabase } from '@/lib/supabase-browser';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { createServerSupabase } from '@/lib/supabase';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart3, TrendingUp, Users, FileText, Award, Loader2, ArrowLeft } from 'lucide-react';
+import { ErrorTypeBadges } from '@/components/error-types';
+import { BarChart3, FileText, Target, Users } from 'lucide-react';
+import { asAnswers, computeCopyScore, frPoints, maxFor, normId, pointsFor, type ScaleQuestion } from '@/lib/scoring';
+import { subjectLabel, levelLabel } from '@/lib/labels';
 
-interface EvaluationStats {
+export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'Résultats' };
+
+interface EvalResult {
   id: string;
   title: string;
-  subject: string;
-  class_level: string;
-  created_at: string;
-  total_copies: number | null;
-  validated_count: number;
-  avg_score: number;
-  max_score: number;
-  min_score: number;
-  pass_rate: number; // % copies avec note ≥ moyenne/2
+  meta: string;
+  createdAt: string;
+  total: number;
+  validated: number;
+  avg20: number | null;
+  min20: number | null;
+  max20: number | null;
+  passRate: number | null;
+  hardest: { label: string; rate: number }[];
+  errors: Record<string, number>;
 }
 
-export default function StatsDashboard() {
-  const [stats, setStats] = useState<EvaluationStats[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<'date' | 'avg' | 'count'>('date');
-  const router = useRouter();
-  const supabase = createBrowserSupabase();
+const round1 = (n: number) => Math.round(n * 10) / 10;
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+function buildResult(evaluation: any): EvalResult {
+  const scale: ScaleQuestion[] = Array.isArray(evaluation.grading_scale) ? evaluation.grading_scale : [];
+  const copies: any[] = evaluation.copies || [];
+  const validated = copies.filter((c) => c.validated_by_user);
 
-  const loadStats = async () => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push('/login'); return; }
+  const notes20: number[] = [];
+  const perQuestion = new Map<string, { label: string; got: number; max: number }>();
+  const errors: Record<string, number> = {};
 
-      const { data: evaluations, error } = await supabase
-        .from('evaluations')
-        .select('id, title, subject, class_level, created_at, total_copies')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+  for (const copy of validated) {
+    const answers = asAnswers(copy.extracted_answers);
+    const computed = computeCopyScore(answers, scale);
+    const score = copy.final_score != null ? Number(copy.final_score) : computed.score;
+    if (computed.max > 0) notes20.push(Math.min(20, (score / computed.max) * 20));
 
-      if (error) throw error;
-      if (!evaluations?.length) { setStats([]); setLoading(false); return; }
-
-      // Fetch copies for each evaluation and compute stats
-      const statsList: EvaluationStats[] = [];
-      for (const evalItem of evaluations) {
-        const { data: copies } = await supabase
-          .from('copies')
-          .select('validated_by_user, proposed_score, proposed_max_score')
-          .eq('evaluation_id', evalItem.id);
-
-        const validated = (copies || []).filter((c) => c.validated_by_user);
-        const scores = validated
-          .map((c) => c.proposed_score)
-          .filter((s): s is number => s !== null && s !== undefined);
-
-        if (scores.length > 0) {
-          const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-          const max = Math.max(...scores);
-          const min = Math.min(...scores);
-          const maxPossible = validated[0]?.proposed_max_score || 1;
-          const passRate = scores.filter((s) => s >= (maxPossible / 2)).length / scores.length;
-
-          statsList.push({
-            id: evalItem.id,
-            title: evalItem.title,
-            subject: evalItem.subject,
-            class_level: evalItem.class_level,
-            created_at: evalItem.created_at,
-            total_copies: evalItem.total_copies,
-            validated_count: validated.length,
-            avg_score: Math.round(avg * 100) / 100,
-            max_score: max,
-            min_score: min,
-            pass_rate: Math.round(passRate * 100),
-          });
-        } else if ((copies || []).length > 0) {
-          // Copies exist but none validated yet
-          statsList.push({
-            id: evalItem.id,
-            title: evalItem.title,
-            subject: evalItem.subject,
-            class_level: evalItem.class_level,
-            created_at: evalItem.created_at,
-            total_copies: evalItem.total_copies,
-            validated_count: 0,
-            avg_score: 0,
-            max_score: 0,
-            min_score: 0,
-            pass_rate: 0,
-          });
-        }
-      }
-
-      setStats(statsList);
-    } catch (err) {
-      console.error('Stats error:', err);
+    for (const a of answers) {
+      const max = maxFor(a, scale, computed.weighted);
+      if (max <= 0) continue;
+      const key = normId(a.question_id);
+      const entry = perQuestion.get(key) || { label: `Question ${a.question_id}`, got: 0, max: 0 };
+      entry.got += pointsFor(a, max);
+      entry.max += max;
+      perQuestion.set(key, entry);
+      if (a.is_correct !== true && a.error_type) errors[a.error_type] = (errors[a.error_type] || 0) + 1;
     }
-    setLoading(false);
-  };
-
-  const sortedStats = [...stats].sort((a, b) => {
-    if (sortBy === 'avg') return b.avg_score - a.avg_score;
-    if (sortBy === 'count') return (b.validated_count || 0) - (a.validated_count || 0);
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-
-  const globalAvg = stats.length > 0
-    ? Math.round((stats.reduce((s, e) => s + e.avg_score, 0) / stats.filter((e) => e.validated_count > 0).length) * 100) / 100
-    : 0;
-  const globalTotal = stats.reduce((s, e) => s + (e.validated_count || 0), 0);
-
-  const subjectColors: Record<string, string> = {
-    maths: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
-    francais: 'text-red-600 bg-red-100 dark:bg-red-900/30',
-    anglais: 'text-green-600 bg-green-100 dark:bg-green-900/30',
-    histoire: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30',
-    svt: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30',
-    physique: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30',
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
   }
 
+  const hardest = Array.from(perQuestion.values())
+    .map((q) => ({ label: q.label, rate: q.max > 0 ? Math.round((q.got / q.max) * 100) : 0 }))
+    .filter((q) => q.rate < 60)
+    .sort((a, b) => a.rate - b.rate)
+    .slice(0, 3);
+
+  const has = notes20.length > 0;
+  return {
+    id: evaluation.id,
+    title: evaluation.title,
+    meta: [subjectLabel(evaluation.subject), levelLabel(evaluation.class_level)].filter(Boolean).join(' · '),
+    createdAt: evaluation.created_at,
+    total: copies.length,
+    validated: validated.length,
+    avg20: has ? round1(notes20.reduce((s, n) => s + n, 0) / notes20.length) : null,
+    min20: has ? round1(Math.min(...notes20)) : null,
+    max20: has ? round1(Math.max(...notes20)) : null,
+    passRate: has ? Math.round((notes20.filter((n) => n >= 10).length / notes20.length) * 100) : null,
+    hardest,
+    errors,
+  };
+}
+
+export default async function StatsPage() {
+  const supabase = createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: evaluations } = await supabase
+    .from('evaluations')
+    .select('id, title, subject, class_level, created_at, grading_scale, copies(validated_by_user, final_score, extracted_answers)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const results = (evaluations || []).map(buildResult).filter((r) => r.total > 0);
+  const withNotes = results.filter((r) => r.avg20 !== null);
+  const validatedTotal = results.reduce((s, r) => s + r.validated, 0);
+  const weight = withNotes.reduce((s, r) => s + r.validated, 0);
+  const globalAvg = weight > 0 ? round1(withNotes.reduce((s, r) => s + (r.avg20 as number) * r.validated, 0) / weight) : null;
+  const globalPass = weight > 0 ? Math.round(withNotes.reduce((s, r) => s + (r.passRate as number) * r.validated, 0) / weight) : null;
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <Button variant="ghost" size="sm" onClick={() => router.push('/app')} className="mb-2 -ml-2">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Retour
-          </Button>
-          <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
-          <p className="text-muted-foreground mt-1">
-            Statistiques de correction sur toutes tes évaluations
-          </p>
-        </div>
+    <div className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Résultats</h1>
+        <p className="text-muted-foreground mt-1">
+          Les moyennes de tes classes et les questions qui ont posé problème, calculées sur les copies validées.
+        </p>
       </div>
 
-      {stats.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Aucune statistique</h3>
-            <p className="text-muted-foreground mt-1">
-              Corrige tes premières copies pour voir tes statistiques apparaître ici.
+      {results.length === 0 ? (
+        <Card className="border-dashed border-2">
+          <CardContent className="p-10 text-center space-y-3">
+            <BarChart3 className="h-10 w-10 mx-auto text-muted-foreground" />
+            <h2 className="text-xl font-semibold">Pas encore de résultats</h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Dès que tu valides des copies, la moyenne de la classe et les questions les moins réussies apparaissent ici.
             </p>
-            <Button className="mt-4" onClick={() => router.push('/app/new')}>
-              Créer une évaluation
+            <Button asChild>
+              <Link href="/app/new">Créer une évaluation</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Overview cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-1">
-                  <FileText className="h-3.5 w-3.5" />
-                  Évaluations
-                </CardDescription>
-                <CardTitle className="text-2xl">{stats.length}</CardTitle>
+                <CardDescription className="flex items-center gap-1"><FileText className="h-3.5 w-3.5" /> Évaluations</CardDescription>
+                <CardTitle className="text-2xl">{results.length}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" />
-                  Copies corrigées
-                </CardDescription>
-                <CardTitle className="text-2xl">{globalTotal}</CardTitle>
+                <CardDescription className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Copies validées</CardDescription>
+                <CardTitle className="text-2xl">{validatedTotal}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-1">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  Moyenne générale
-                </CardDescription>
-                <CardTitle className="text-2xl">{globalAvg}</CardTitle>
+                <CardDescription className="flex items-center gap-1"><BarChart3 className="h-3.5 w-3.5" /> Moyenne générale</CardDescription>
+                <CardTitle className="text-2xl">{globalAvg !== null ? `${frPoints(globalAvg)} / 20` : '—'}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-1">
-                  <Award className="h-3.5 w-3.5" />
-                  Taux réussite
-                </CardDescription>
-                <CardTitle className="text-2xl">
-                  {stats.some((e) => e.validated_count > 0)
-                    ? Math.round((stats.reduce((s, e) => s + e.pass_rate, 0) / stats.filter((e) => e.validated_count > 0).length)) + '%'
-                    : '—'}
-                </CardTitle>
+                <CardDescription className="flex items-center gap-1"><Target className="h-3.5 w-3.5" /> Au-dessus de 10 / 20</CardDescription>
+                <CardTitle className="text-2xl">{globalPass !== null ? `${globalPass} %` : '—'}</CardTitle>
               </CardHeader>
             </Card>
-          </div>
-
-          {/* Sort + evaluation list */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Par évaluation</h2>
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">Plus récentes</SelectItem>
-                <SelectItem value="avg">Meilleure moyenne</SelectItem>
-                <SelectItem value="count">Plus de copies</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-3">
-            {sortedStats.map((s) => {
-              const colorClass = subjectColors[s.subject] || 'text-gray-600 bg-gray-100 dark:bg-gray-800';
-              const barWidth = s.max_score > 0 ? (s.avg_score / s.max_score) * 100 : 0;
-
-              return (
-                <Card
-                  key={s.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => router.push(`/app/evaluations/${s.id}`)}
-                >
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <h3 className="font-semibold truncate">{s.title}</h3>
-                          <Badge variant="secondary" className="text-xs shrink-0">
-                            {s.subject}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-3">
-                          {s.class_level} · Créée le {new Date(s.created_at).toLocaleDateString('fr-FR')} · {s.validated_count}/{s.total_copies || '?'} copies
+            <h2 className="text-lg font-semibold">Par évaluation</h2>
+            {results.map((r) => (
+              <Link key={r.id} href={`/app/evaluations/${r.id}`} className="block">
+                <Card className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4 sm:p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold truncate">{r.title}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {r.meta}{r.meta ? ' · ' : ''}{new Date(r.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} · {r.validated}/{r.total} copies validées
                         </p>
+                      </div>
+                      {r.avg20 !== null && (
+                        <Badge variant="secondary" className="text-sm shrink-0">Moyenne {frPoints(r.avg20)} / 20</Badge>
+                      )}
+                    </div>
 
-                        {s.validated_count > 0 ? (
-                          <>
-                            {/* Score bar */}
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-mono w-12">{s.avg_score}</span>
-                              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full transition-colors duration-200 ease-out duration-500 ${colorClass.split(' ')[0]}`}
-                                  style={{ width: `${Math.min(barWidth, 100)}%` }}
-                                />
-                              </div>
-                              <span className="text-sm font-mono text-muted-foreground w-12 text-right">{s.max_score}</span>
-                            </div>
-
-                            {/* Mini stats */}
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>Min : <span className="font-mono font-medium">{s.min_score}</span></span>
-                              <span>Max : <span className="font-mono font-medium">{s.max_score}</span></span>
-                              <span>Taux réussite : <span className="font-medium">{s.pass_rate}%</span></span>
-                            </div>
-                          </>
-                        ) : (
-                          <p className="text-sm text-muted-foreground italic">
-                            En attente de validation — les stats apparaîtront ici après validation
+                    {r.avg20 !== null ? (
+                      <>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden" aria-hidden="true">
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (r.avg20 / 20) * 100)}%` }} />
+                        </div>
+                        <div className="flex items-center gap-x-4 gap-y-1 text-xs text-muted-foreground flex-wrap">
+                          <span>Note la plus basse : <span className="font-medium text-foreground">{frPoints(r.min20)}</span></span>
+                          <span>Note la plus haute : <span className="font-medium text-foreground">{frPoints(r.max20)}</span></span>
+                          <span>Au-dessus de 10 : <span className="font-medium text-foreground">{r.passRate} %</span></span>
+                        </div>
+                        {r.hardest.length > 0 && (
+                          <p className="text-sm">
+                            <span className="text-muted-foreground">À reprendre en classe : </span>
+                            {r.hardest.map((q) => `${q.label} (${q.rate} % de réussite)`).join(' · ')}
                           </p>
                         )}
-                      </div>
-                    </div>
+                        <ErrorTypeBadges counts={r.errors} max={4} />
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Aucune copie validée pour l'instant : les résultats apparaîtront après validation.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
-              );
-            })}
+              </Link>
+            ))}
           </div>
         </>
       )}

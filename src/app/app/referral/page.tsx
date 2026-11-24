@@ -3,142 +3,77 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Gift, Users, Share2, Copy, Check, Mail, MessageCircle } from 'lucide-react';
+import { Copy, Check, Mail, MessageCircle, Users } from 'lucide-react';
+
+const SHARE_LINK = 'https://copie-express-v1.vercel.app/?source=collegue';
+const SHARE_TEXT = `Salut ! J'utilise Copie Express pour mes contrôles : je prends les copies en photo, l'outil propose une note par copie, je vérifie et j'exporte vers Pronote. Les 5 premières copies sont offertes, sans carte bancaire : ${SHARE_LINK}`;
 
 export default function ReferralPage() {
-  const [copied, setCopied] = useState(false);
-  const referralCode = 'CE-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  const referralLink = `https://copie-express-v1.vercel.app/signup?ref=${referralCode}`;
+  const [copied, setCopied] = useState<'link' | 'text' | null>(null);
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    toast.success('Lien copié !');
-    setTimeout(() => setCopied(false), 2000);
+  const copy = async (what: 'link' | 'text') => {
+    try {
+      await navigator.clipboard.writeText(what === 'link' ? SHARE_LINK : SHARE_TEXT);
+      setCopied(what);
+      toast.success(what === 'link' ? 'Lien copié' : 'Message copié');
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      toast.error('Copie impossible depuis ce navigateur. Sélectionne le texte à la main.');
+    }
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8">
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <Gift className="h-8 w-8 text-primary" />
+    <div className="p-4 sm:p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10">
+          <Users className="h-7 w-7 text-primary" />
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold">Parraine un collègue</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Tu connais un prof qui passe aussi 3h sur SACoche ? Offre-lui 1 mois gratuit,
-          et gagne 1 mois gratuit pour toi aussi.
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Recommander à un collègue</h1>
+        <p className="text-muted-foreground max-w-xl mx-auto">
+          Un collègue croule sous les copies ? Envoie-lui le lien : ses 5 premières copies sont offertes, sans carte bancaire.
         </p>
       </div>
 
-      {/* Comment ça marche */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Share2 className="h-5 w-5 text-primary" />
-              1. Tu partages
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Envoie ton lien unique à un collègue. Il s'inscrit avec ton lien.
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              2. Il teste
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Il crée son compte, upload ses premières copies, et découvre la magie.
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Gift className="h-5 w-5 text-primary" />
-              3. Vous gagnez
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Vous gagnez tous les deux 1 mois gratuit sur votre forfait.
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Ton lien unique */}
       <Card className="border-primary/20">
         <CardHeader>
-          <CardTitle>Ton lien de parrainage unique</CardTitle>
-          <CardDescription>
-            Partage-le par email, WhatsApp, ou en salle des profs.
-          </CardDescription>
+          <CardTitle className="text-base">Le lien à partager</CardTitle>
+          <CardDescription>Par e-mail, par messagerie, ou affiché en salle des profs.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
-            <div className="flex-1 p-3 bg-muted rounded-lg font-mono text-sm break-all">
-              {referralLink}
-            </div>
-            <Button onClick={copyToClipboard} variant="outline" className="shrink-0">
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              <span className="ml-2 hidden sm:inline">{copied ? 'Copié !' : 'Copier'}</span>
+            <div className="flex-1 p-3 bg-muted rounded-lg font-mono text-sm break-all">{SHARE_LINK}</div>
+            <Button onClick={() => copy('link')} variant="outline" className="shrink-0">
+              {copied === 'link' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              <span className="ml-2 hidden sm:inline">{copied === 'link' ? 'Copié' : 'Copier'}</span>
             </Button>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant="secondary">{referralCode}</Badge>
-            <span>· Partagé 0 fois</span>
-            <span>· 0 mois gagnés</span>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Partage rapide */}
       <Card>
         <CardHeader>
-          <CardTitle>Partage rapide</CardTitle>
+          <CardTitle className="text-base">Un message prêt à envoyer</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
-          <Button variant="outline" asChild>
-            <a href={`mailto:?subject=Rejoins Copie Express&body=Salut ! J'utilise Copie Express pour corriger mes copies 10x plus vite. Inscris-toi avec mon lien et on gagne 1 mois gratuit chacun : ${referralLink}`}>
-              <Mail className="h-4 w-4 mr-2" />
-              Email
-            </a>
-          </Button>
-          <Button variant="outline" asChild>
-            <a href={`https://wa.me/?text=Salut ! J'utilise Copie Express pour corriger mes copies 10x plus vite. Inscris-toi avec mon lien et on gagne 1 mois gratuit chacun : ${referralLink}`} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              WhatsApp
-            </a>
-          </Button>
-          <Button variant="outline" onClick={copyToClipboard}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copier le texte
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* FAQ Parrainage */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Questions fréquentes</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <div>
-            <p className="font-medium text-foreground">Quand est-ce que je reçois mon mois gratuit ?</p>
-            <p>Dès que ton filleul a validé sa première copie (pas juste créé un compte). On vérifie que c'est un vrai prof, pas un bot.</p>
-          </div>
-          <div>
-            <p className="font-medium text-foreground">Y a-t-il une limite ?</p>
-            <p>Non ! Tu peux parrainer autant de collègues que tu veux. 1 mois gratuit par filleul actif, à vie.</p>
-          </div>
-          <div>
-            <p className="font-medium text-foreground">Ça marche si mon collègue est déjà inscrit ?</p>
-            <p>Non, le lien doit être utilisé lors de la création du compte. S'il a déjà un compte, il peut toujours s'inscrire avec un autre email.</p>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground rounded-lg bg-muted p-3">{SHARE_TEXT}</p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" asChild>
+              <a href={`mailto:?subject=${encodeURIComponent('Un outil pour corriger les copies')}&body=${encodeURIComponent(SHARE_TEXT)}`}>
+                <Mail className="h-4 w-4 mr-2" />
+                E-mail
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href={`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4 mr-2" />
+                WhatsApp
+              </a>
+            </Button>
+            <Button variant="outline" onClick={() => copy('text')}>
+              {copied === 'text' ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+              Copier le message
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -27,6 +27,16 @@ export function FadeIn({
       return;
     }
 
+    // Déjà à l'écran au chargement : on n'attend pas l'observateur
+    // (il peut ne jamais se déclencher sur certains mobiles).
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      const t = setTimeout(() => setVisible(true), delay);
+      return () => clearTimeout(t);
+    }
+    // Filet de sécurité : rien ne reste invisible plus de 2 secondes.
+    const safety = setTimeout(() => setVisible(true), 2000 + delay);
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -40,7 +50,7 @@ export function FadeIn({
       { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => { io.disconnect(); clearTimeout(safety); };
   }, [delay]);
 
   return (

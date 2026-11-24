@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Notice d\'information aux familles — Copie Express',
+  title: 'Notice d\'information aux familles',
   description: 'Document à remettre aux familles : comment les évaluations sont analysées, qui valide les notes, ce qu\'il advient des copies.',
 };
 

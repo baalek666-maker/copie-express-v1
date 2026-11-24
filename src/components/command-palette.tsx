@@ -7,7 +7,7 @@ import { FileText, Plus, BarChart3, Settings, LogOut } from 'lucide-react';
 const actions = [
   { id: 'new', label: 'Nouvelle évaluation', icon: Plus, href: '/app/new', keywords: ['creer', 'create', 'new'] },
   { id: 'list', label: 'Mes évaluations', icon: FileText, href: '/app', keywords: ['liste', 'evaluations', 'mes'] },
-  { id: 'usage', label: 'Mon usage', icon: BarChart3, href: '/app/usage', keywords: ['usage', 'stats', 'statistiques'] },
+  { id: 'usage', label: 'Mon activité', icon: BarChart3, href: '/app/usage', keywords: ['usage', 'activite', 'historique'] },
   { id: 'account', label: 'Mon compte', icon: Settings, href: '/app/account', keywords: ['compte', 'profil', 'account'] },
 ];
 
@@ -68,7 +68,7 @@ export function CommandPalette() {
         <div className="p-3 border-b">
           <input
             ref={inputRef}
-            placeholder="Tape une commande… (Cmd+K)"
+            placeholder="Aller à…"
             className="w-full px-3 py-2 bg-transparent outline-none text-sm"
             value={query}
             onChange={(e) => {

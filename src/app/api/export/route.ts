@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 import { getBackendUrl } from '@/lib/backend-url';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const evaluationId = searchParams.get('evaluationId');
@@ -14,33 +16,36 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'invalid_format' }, { status: 400 });
   }
 
-  // Vérifier l'auth
   const supabase = createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!user || !session?.access_token) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
-  // Proxy vers Express backend — le backend retourne directement le CSV
-  const backendUrl = getBackendUrl();
-  const response = await fetch(`${backendUrl}/api/export`, {
+  // Le serveur de traitement vérifie lui-même le jeton et la propriété de l'évaluation
+  const response = await fetch(`${getBackendUrl()}/api/export`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    },
     body: JSON.stringify({ evaluationId, format }),
+    cache: 'no-store',
   });
 
   if (!response.ok) {
-    const errBody = await response.json().catch(() => ({ error: 'export_failed' }));
-    return NextResponse.json(errBody, { status: response.status });
+    // Pas de JSON brut à l'écran : retour sur l'évaluation
+    return NextResponse.redirect(new URL(`/app/evaluations/${evaluationId}?export=erreur`, request.url));
   }
 
-  // Le backend renvoie directement le CSV → on le stream tel quel
-  const csvContent = await response.text();
-  const filename = `${format}_${evaluationId}_${Date.now()}.csv`;
-
+  // Octets transmis tels quels : le marqueur d'encodage en tête de fichier doit rester (accents dans Excel)
+  const csvContent = await response.arrayBuffer();
   return new NextResponse(csvContent, {
     status: 200,
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': `attachment; filename="${format}_${evaluationId}.csv"`,
     },
   });
 }

@@ -45,15 +45,17 @@ export function PhotoTips() {
     <Card className="border-blue-200 bg-blue-50/30">
       <CardContent className="p-4">
         <button
+          type="button"
+          aria-expanded={open}
           onClick={() => setOpen(!open)}
           className="flex items-center justify-between w-full text-left"
         >
           <div className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-blue-600" />
             <div>
-              <div className="font-medium text-sm">📸 Conseils pour une bonne photo</div>
+              <div className="font-medium text-sm">Conseils pour une bonne photo</div>
               <div className="text-xs text-muted-foreground">
-                Une copie bien photographiée = une lecture fiable à 95%+
+                Plus la photo est nette, plus la lecture est fiable.
               </div>
             </div>
           </div>
@@ -63,7 +65,7 @@ export function PhotoTips() {
         {open && (
           <div className="mt-4 space-y-4">
             {/* Tips OK */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {tips.map((tip, i) => (
                 <div key={i} className="flex gap-2 p-2 rounded-md bg-white border">
                   <tip.icon className={`h-5 w-5 shrink-0 mt-0.5 ${tip.color}`} />
@@ -94,7 +96,7 @@ export function PhotoTips() {
             {/* Accepted formats */}
             <div className="text-xs text-muted-foreground flex items-center gap-2 pt-2 border-t">
               <CheckCircle2 className="h-3 w-3 text-green-600" />
-              Formats acceptés : JPG, PNG, WebP, PDF, Word, Excel, PowerPoint · Max 50 MB par fichier
+              Formats acceptés : JPG, PNG, WebP, PDF, Word, Excel, PowerPoint · 50 Mo maximum par fichier
             </div>
           </div>
         )}

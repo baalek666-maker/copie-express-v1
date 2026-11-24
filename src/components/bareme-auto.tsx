@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { backendJson } from '@/lib/api';
+import { frPoints } from '@/lib/scoring';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, Wand2, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { getBackendUrl } from '@/lib/backend-url';
 
 type BaremeQuestion = {
   id: string;
@@ -27,7 +27,6 @@ export function BaremeAuto({
   alreadyGenerated: boolean;
 }) {
   const router = useRouter();
-  const supabase = createBrowserSupabase();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,24 +38,10 @@ export function BaremeAuto({
     setLoading(true);
     setError(null);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non connecté');
-
-      const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = getBackendUrl();
-      const response = await fetch(`${backendUrl}/api/bareme-auto`, {
+      const data = await backendJson('/api/bareme-auto', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ evaluationId, userId: user.id }),
+        body: JSON.stringify({ evaluationId }),
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.hint || data.error || 'Génération impossible');
-      }
       setQuestions(data.questions);
       setComment(data.comment);
       router.refresh();
@@ -72,20 +57,10 @@ export function BaremeAuto({
     setSaving(true);
     setError(null);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non connecté');
-      const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = getBackendUrl();
-      const response = await fetch(`${backendUrl}/api/bareme-auto`, {
+      await backendJson('/api/bareme-auto', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ evaluationId, userId: user.id, questions }),
+        body: JSON.stringify({ evaluationId, questions }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.hint || data.error || 'Enregistrement impossible');
       setSavedAt(new Date());
       router.refresh();
     } catch (err: any) {
@@ -97,7 +72,7 @@ export function BaremeAuto({
 
   const updatePoints = (idx: number, value: string) => {
     if (!questions) return;
-    const pts = Math.min(10, Math.max(0.5, parseFloat(value.replace(',', '.')) || 1));
+    const pts = Math.min(20, Math.max(0.25, parseFloat(value.replace(',', '.')) || 1));
     const next = [...questions];
     next[idx] = { ...next[idx], points: pts };
     setQuestions(next);
@@ -113,16 +88,22 @@ export function BaremeAuto({
           <CardTitle className="flex items-center justify-between text-base">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Barème express généré
+              Barème prêt
             </span>
             <Button size="sm" variant="outline" onClick={generate} disabled={loading}>
               <Wand2 className="h-3 w-3 mr-1" />
-              Regénérer
+              Régénérer
             </Button>
           </CardTitle>
           <CardDescription>
-            Les corrections s'appuient sur ce barème. Tu peux le régénérer ou l'ajuster.
+            Les notes proposées s'appuient sur ce barème. Tu peux le régénérer pour l'ajuster.
           </CardDescription>
+          {error && (
+            <div role="alert" className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </div>
+          )}
         </CardHeader>
       </Card>
     );
@@ -133,12 +114,12 @@ export function BaremeAuto({
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          Barème express <span className="text-sm font-normal text-muted-foreground">(nouveau)</span>
+          Barème express
         </CardTitle>
         <CardDescription>
           {hasSubject
             ? 'Génère un barème complet depuis ton sujet : questions, points, savoir-faire et réponses attendues. Modifiable avant correction.'
-            : 'Upload d\'abord le sujet ci-dessus, puis génère le barème en un clic.'}
+            : 'Dépose d\'abord le sujet ci-dessus, puis génère le barème en un clic.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -147,7 +128,7 @@ export function BaremeAuto({
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Analyse du sujet... (~20 sec)
+                Lecture du sujet… (environ 20 secondes)
               </>
             ) : (
               <>
@@ -180,14 +161,15 @@ export function BaremeAuto({
                       <td className="p-2">
                         <p className="font-medium">{q.label}</p>
                         {q.skill && <Badge variant="outline" className="mt-1 text-xs font-normal">{q.skill}</Badge>}
+                        <p className="md:hidden text-xs text-muted-foreground mt-1">Attendu : {q.expected}</p>
                       </td>
                       <td className="p-2 text-muted-foreground hidden md:table-cell">{q.expected}</td>
                       <td className="p-2 text-right">
                         <input
                           type="number"
-                          min={0.5}
-                          max={10}
-                          step={0.5}
+                          min={0.25}
+                          max={20}
+                          step={0.25}
                           value={q.points}
                           onChange={(e) => updatePoints(i, e.target.value)}
                           className="w-16 text-right rounded-md border px-2 py-1 bg-background"
@@ -200,7 +182,7 @@ export function BaremeAuto({
                 <tfoot className="bg-muted/50">
                   <tr>
                     <td colSpan={3} className="p-2 font-medium">Total</td>
-                    <td className="p-2 text-right font-bold">{total} {total > 1 ? 'pts' : 'pt'}</td>
+                    <td className="p-2 text-right font-bold">{frPoints(total)} {total > 1 ? 'pts' : 'pt'}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -210,7 +192,7 @@ export function BaremeAuto({
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Enregistrement...
+                    Enregistrement…
                   </>
                 ) : (
                   <>
@@ -227,8 +209,8 @@ export function BaremeAuto({
         )}
 
         {error && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
+          <div role="alert" className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
           </div>
         )}

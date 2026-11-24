@@ -133,7 +133,7 @@ const faqs = [
   },
   {
     q: 'Y a-t-il une version gratuite ?',
-    a: "Oui : 10 copies offertes à l'inscription pour tester sans risque. Aucune carte requise. Si t'es convaincu, tu passes au plan annuel à 99€.",
+    a: "Oui : 5 copies offertes à l'inscription pour tester sans risque. Aucune carte requise. Si t'es convaincu, tu passes au plan annuel à 99€.",
   },
   {
     q: 'Pourquoi pas utiliser ChatGPT pour faire la même chose ?',
@@ -190,7 +190,7 @@ export default function HomePage() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
                 <Star className="h-3.5 w-3.5 fill-current" />
-                10 copies gratuites, sans carte bancaire
+                5 copies offertes, sans carte bancaire
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
@@ -634,11 +634,11 @@ export default function HomePage() {
               Et si mardi prochain, <span className="italic font-serif text-orange-400">tu allais au match</span> de ton fils ?
             </h2>
             <p className="text-lg text-zinc-300">
-              10 copies offertes. Aucun engagement. 3 minutes pour te convaincre.
+              5 copies offertes. Aucun engagement. 3 minutes pour te convaincre.
             </p>
             <LeadCapture />
             <p className="text-xs text-zinc-400 pt-2">
-              ✓ 10 copies gratuites · ✓ Sans carte bancaire · ✓ Désinscription en 1 clic
+              ✓ 5 copies offertes · ✓ Sans carte bancaire · ✓ Résiliable à tout moment
             </p>
             <p className="text-xs text-zinc-500 pt-3">
               Outil de saisie administrative · Non destiné aux épreuves officielles
@@ -654,15 +654,15 @@ export default function HomePage() {
             © 2026 Copie Express. Fait avec ❤️ par et pour des profs.
           </p>
           <nav className="flex gap-4 flex-wrap justify-center text-sm text-muted-foreground">
-            <Link href="/why-us" className="hover:text-foreground">Pourquoi nous</Link>
-            <Link href="/guide" className="hover:text-foreground">Guide enseignant</Link>
-            <Link href="/notice-familles" className="hover:text-foreground">Notice familles</Link>
-            <Link href="/pricing" className="hover:text-foreground">Tarifs</Link>
-            <Link href="/contact" className="hover:text-foreground">Contact</Link>
-            <Link href="/legal/cgu" className="hover:text-foreground">CGU</Link>
-            <Link href="/legal/cgv" className="hover:text-foreground">CGV</Link>
-            <Link href="/legal/privacy" className="hover:text-foreground">Confidentialité</Link>
-            <Link href="/legal/mentions" className="hover:text-foreground">Mentions légales</Link>
+            <Link href="/why-us" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Pourquoi nous</Link>
+            <Link href="/guide" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Guide enseignant</Link>
+            <Link href="/notice-familles" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Notice familles</Link>
+            <Link href="/pricing" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Tarifs</Link>
+            <Link href="/contact" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Contact</Link>
+            <Link href="/legal/cgu" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">CGU</Link>
+            <Link href="/legal/cgv" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">CGV</Link>
+            <Link href="/legal/privacy" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Confidentialité</Link>
+            <Link href="/legal/mentions" className="hover:text-foreground inline-flex items-center min-h-[44px] px-1">Mentions légales</Link>
           </nav>
         </div>
       </footer>

@@ -1,10 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FadeIn } from '@/components/fade-in';
 import { Check, X, Minus } from 'lucide-react';
 
+export const metadata: Metadata = { title: 'Pourquoi Copie Express', description: 'Copie Express comparé à SACoche, Pronote et Gradescope pour corriger les copies manuscrites.', alternates: { canonical: '/why-us' } };
+
 const comparison = [
   { feature: 'Correction assistée', us: true, sacoche: false, pronote: false, gradescope: true },
-  { feature: 'Upload par photo', us: true, sacoche: false, pronote: false, gradescope: false },
+  { feature: 'Dépôt des copies par photo', us: true, sacoche: false, pronote: false, gradescope: false },
   { feature: 'Export SACoche natif', us: true, sacoche: true, pronote: false, gradescope: false },
   { feature: 'Export Pronote natif', us: true, sacoche: false, pronote: true, gradescope: false },
   { feature: 'Détection multi-méthodes', us: true, sacoche: false, pronote: false, gradescope: false },

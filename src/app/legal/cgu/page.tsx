@@ -1,3 +1,7 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Conditions générales d’utilisation', alternates: { canonical: '/legal/cgu' } };
+
 export const dynamic = 'force-static';
 
 export default function CGUPage() {
@@ -6,11 +10,11 @@ export default function CGUPage() {
       <div className="max-w-3xl mx-auto p-8">
         <a href="/" className="text-sm text-muted-foreground hover:text-foreground">← Retour</a>
         <h1>Conditions Générales d&apos;Utilisation — Copie Express</h1>
-        <p><strong>Dernière mise à jour :</strong> 30 juillet 2026</p>
+        <p><strong>Dernière mise à jour :</strong> 24 novembre 2026</p>
 
         <p><strong>Éditeur du service :</strong><br />
         Copie Express (auto-entreprise en cours d&apos;immatriculation)<br />
-        Contact : contact@copie-express.fr</p>
+        Contact : <a href="/contact" className="underline">le formulaire de contact</a></p>
 
         <p><strong>Hébergeur :</strong><br />
         Vercel Inc. (siège social : Walnut, CA, USA)<br />
@@ -30,7 +34,7 @@ export default function CGUPage() {
         <h3>3.1 Conditions d&apos;inscription</h3>
         <p>Le service est réservé aux personnes majeures. L&apos;inscription se fait par email professionnel. L&apos;utilisateur s&apos;engage à fournir des informations exactes lors de son inscription.</p>
         <h3>3.2 Authentification</h3>
-        <p>L&apos;authentification se fait par « lien magique » envoyé par email. L&apos;utilisateur est responsable de la confidentialité de sa boîte email. Tout accès au service via son email est réputé être de son fait.</p>
+        <p>L&apos;authentification se fait par adresse e-mail et mot de passe. L&apos;utilisateur est responsable de la confidentialité de son mot de passe et de sa boîte e-mail. Tout accès au service avec ses identifiants est réputé être de son fait.</p>
         <h3>3.3 Suspension et résiliation</h3>
         <p>L&apos;éditeur se réserve le droit de suspendre ou supprimer tout compte en cas de :</p>
         <ul>
@@ -44,35 +48,34 @@ export default function CGUPage() {
         <h2>4. Description des services et tarifs</h2>
         <h3>4.1 Forfait Découverte (gratuit)</h3>
         <ul>
-          <li>10 copies offertes à l&apos;inscription, sans carte bancaire</li>
+          <li>5 copies offertes à l&apos;inscription, sans carte bancaire</li>
           <li>Une seule fois par utilisateur (mesures anti-abus)</li>
-          <li>Fonctionnalités : lecture des réponses, export CSV basique</li>
+          <li>Fonctionnalités : lecture des copies, note proposée, export Pronote et SACoche</li>
         </ul>
-        <h3>4.2 Forfait Mensuel</h3>
+        <h3>4.2 Forfaits mensuels</h3>
         <ul>
-          <li>Prix : 10 € TTC / mois</li>
-          <li>Copies illimitées (jusqu&apos;à 1 500 / mois, mesures anti-abus)</li>
-          <li>Sans engagement, résiliation à tout moment</li>
-          <li>Fonctionnalités : lecture des réponses, export SACoche, export Pronote, support prioritaire</li>
+          <li>Petit Correcteur : 5 € TTC / mois, jusqu&apos;à 50 copies par mois</li>
+          <li>Standard : 15 € TTC / mois, jusqu&apos;à 500 copies par mois</li>
+          <li>Sans engagement, résiliation à tout moment depuis l&apos;espace personnel</li>
+          <li>Fonctionnalités : lecture des copies, note proposée, barème à partir du sujet, export SACoche, export Pronote</li>
         </ul>
         <h3>4.3 Forfait Annuel Standard</h3>
         <ul>
           <li>Prix : 99 € TTC / an</li>
-          <li>Copies illimitées (jusqu&apos;à 2 000 / mois, mesures anti-abus)</li>
-          <li>Économie de 21 € par rapport au forfait mensuel</li>
-          <li>Stockage des copies : 30 jours (conformément au RGPD)</li>
-          <li>Support prioritaire</li>
+          <li>Jusqu&apos;à 2 000 copies par mois</li>
+          <li>Économie de 81 € par rapport au forfait Standard mensuel sur un an</li>
+          <li>Conservation des photos de copies : 30 jours</li>
         </ul>
         <h3>4.4 Forfait Expert Bac/Brevet</h3>
         <ul>
           <li>Prix : 149 € TTC / an</li>
-          <li>Copies illimitées (jusqu&apos;à 3 000 / mois, mesures anti-abus)</li>
+          <li>Jusqu&apos;à 3 000 copies par mois</li>
           <li>Bibliothèque de barèmes experts (à venir)</li>
           <li>Correcteur calibré brevet/bac (à venir)</li>
           <li>Mises à jour barèmes offertes</li>
           <li>Accès anticipé aux nouvelles fonctionnalités</li>
         </ul>
-        <p>Les prix sont indiques TTC. La TVA n&apos;est pas applicable (auto-entreprise, article 293 B du CGI, en cours d&apos;immatriculation).</p>
+        <p>Une copie est décomptée lorsqu&apos;elle est lue, une seule fois ; une lecture en échec n&apos;est pas décomptée. Les prix sont indiqués TTC. La TVA n&apos;est pas applicable (auto-entreprise, article 293 B du CGI, en cours d&apos;immatriculation).</p>
 
         <h2>5. Paiement et renouvellement</h2>
         <h3>5.1 Modalités de paiement</h3>
@@ -80,7 +83,7 @@ export default function CGUPage() {
         <h3>5.2 Renouvellement</h3>
         <p>Les abonnements mensuels et annuels se renouvellent automatiquement à échéance. L&apos;utilisateur peut résilier à tout moment depuis son espace personnel. La résiliation prend effet à la fin de la période en cours.</p>
         <h3>5.3 Droit de rétractation</h3>
-        <p>Conformément à l&apos;article L221-18 du Code de la consommation, l&apos;utilisateur dispose d&apos;un délai de 14 jours à compter de la souscription pour se rétracter, par email à contact@copie-express.fr. Le remboursement est effectué sous 14 jours.</p>
+        <p>Conformément à l&apos;article L221-18 du Code de la consommation, l&apos;utilisateur dispose d&apos;un délai de 14 jours à compter de la souscription pour se rétracter, via <a href="/contact" className="underline">le formulaire de contact</a>. Le remboursement est effectué sous 14 jours.</p>
         <p>Passé ce délai, aucun remboursement n&apos;est effectué pour les abonnements annuels ou mensuels en cours.</p>
 
         <h2>6. Obligations de l&apos;utilisateur</h2>
@@ -105,7 +108,7 @@ export default function CGUPage() {
         <h2>8. Protection des données personnelles (RGPD)</h2>
         <p>Le traitement des données personnelles est détaillé dans la <strong>Politique de Confidentialité</strong> (voir /legal/privacy). En synthèse :</p>
         <ul>
-          <li>Données stockées en Europe (Supabase Frankfurt)</li>
+          <li>Données stockées dans l&apos;Union européenne (Irlande)</li>
           <li>Aucune donnée revendue à des tiers</li>
           <li>Suppression des copies après 30 jours</li>
           <li>Droit d&apos;accès, rectification, suppression, portabilité</li>
@@ -131,7 +134,7 @@ export default function CGUPage() {
         <h2>13. Contact</h2>
         <p>Pour toute question relative à ces CGU :</p>
         <ul>
-          <li>Email : contact@copie-express.fr</li>
+          <li>Contact : <a href="/contact" className="underline">le formulaire de contact</a></li>
           <li>Courrier : [adresse à compléter]</li>
         </ul>
 

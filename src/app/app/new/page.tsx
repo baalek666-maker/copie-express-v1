@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, FileText, Sparkles, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -72,8 +71,8 @@ export default function NewEvaluationPage() {
     setTitle(template.title);
     setSubject(template.subject);
     setClassLevel(template.classLevel);
-    toast.success('Template chargé', {
-      description: `${template.questions.length} questions pré-remplies.`,
+    toast.success('Modèle appliqué', {
+      description: 'Titre, matière et niveau sont remplis. Tu peux les modifier.',
     });
   };
 
@@ -83,7 +82,7 @@ export default function NewEvaluationPage() {
     setError(null);
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError('Non connecté'); setLoading(false); return; }
+    if (!user) { setError('Ta session a expiré. Reconnecte-toi.'); setLoading(false); return; }
 
     const { data, error } = await supabase
       .from('evaluations')
@@ -92,26 +91,28 @@ export default function NewEvaluationPage() {
         subject,
         class_level: classLevel,
         user_id: user.id,
-        total_copies: totalCopies ? parseInt(totalCopies, 10) : null,
-        grading_scale: [{ id: 'q1', label: 'Question 1', max_points: 1 }],
+        // champ facultatif : absent, la base applique sa valeur par défaut (la colonne refuse « null »)
+        ...(parseInt(totalCopies, 10) > 0 ? { total_copies: Math.min(500, parseInt(totalCopies, 10)) } : {}),
+        grading_scale: [],
         status: 'draft',
       })
       .select()
       .single();
 
-    if (error) {
-      toast.error(error.message);
-      setError(error.message);
+    if (error || !data) {
+      const message = 'L’évaluation n’a pas pu être créée. Vérifie ta connexion et réessaie.';
+      toast.error(message);
+      setError(message);
       setLoading(false);
       return;
     }
 
-    toast.success('Évaluation créée ✓');
+    toast.success('Évaluation créée');
     router.push(`/app/evaluations/${data.id}`);
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto space-y-6">
       <FadeIn>
         <div>
           <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
@@ -124,7 +125,7 @@ export default function NewEvaluationPage() {
         <div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nouvelle évaluation</h1>
           <p className="text-muted-foreground mt-1">
-            3 infos, c'est tout. Tu pourras uploader le sujet et les copies à l'étape suivante.
+            Un titre, une matière, un niveau. Tu déposes le sujet et les copies juste après.
           </p>
         </div>
       </FadeIn>
@@ -136,10 +137,10 @@ export default function NewEvaluationPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Templates disponibles
+                Partir d'un modèle
               </CardTitle>
               <CardDescription>
-                Clique pour pré-remplir titre, matière et niveau.
+                Un clic remplit le titre, la matière et le niveau.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -147,14 +148,12 @@ export default function NewEvaluationPage() {
                 {filteredTemplates.map((t) => (
                   <button
                     key={t.id}
+                    type="button"
                     onClick={() => useTemplate(t.id)}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-background border hover:border-primary hover:bg-primary/5 transition-colors duration-200 ease-out text-sm"
                   >
                     <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                     {t.title}
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {t.questions.length}Q
-                    </Badge>
                   </button>
                 ))}
               </div>
@@ -182,7 +181,7 @@ export default function NewEvaluationPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="subject">Matière</Label>
                   <Select value={subject} onValueChange={setSubject}>
@@ -212,10 +211,11 @@ export default function NewEvaluationPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="totalCopies">Nb copies</Label>
+                  <Label htmlFor="totalCopies">Nombre de copies <span className="font-normal text-muted-foreground">(facultatif)</span></Label>
                   <Input
                     id="totalCopies"
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     max="500"
                     placeholder="Ex : 30"
@@ -228,7 +228,7 @@ export default function NewEvaluationPage() {
           </Card>
 
           {error && (
-            <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+            <div role="alert" className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
               {error}
             </div>
           )}
@@ -236,11 +236,11 @@ export default function NewEvaluationPage() {
           <div className="flex gap-3">
             <Button type="submit" disabled={loading || !title.trim() || !subject || !classLevel} size="lg" className="shadow-lg shadow-primary/20">
               {loading ? (
-                'Création...'
+                'Création…'
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-1" />
-                  Créer →
+                  Créer l'évaluation
                 </>
               )}
             </Button>
@@ -250,12 +250,12 @@ export default function NewEvaluationPage() {
           </div>
           {!title.trim() || !subject || !classLevel ? (
             <p className="text-xs text-center text-muted-foreground">
-              Complète les 3 champs pour activer le bouton.
+              Indique le titre, la matière et le niveau pour continuer.
             </p>
           ) : null}
 
           <p className="text-xs text-center text-muted-foreground">
-            💡 Sans barème, le système propose des notes indicatives. Tu valides tout.
+            À l'étape suivante, tu pourras ajouter le sujet et un barème pour des notes proposées plus justes.
           </p>
         </form>
       </FadeIn>

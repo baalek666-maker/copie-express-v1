@@ -43,3 +43,6 @@ Thumbs.db
 /tmp/
 *.local
 .vercel
+
+# Audits internes : jamais dans le dépôt
+AUDIT-*.md

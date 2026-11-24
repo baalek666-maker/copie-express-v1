@@ -4,8 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { FadeIn } from '@/components/fade-in';
 import { FileText, Clock, TrendingUp, CheckCircle2, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+import { subjectLabel } from '@/lib/labels';
 
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'Mon activité' };
 
 export default async function UsagePage() {
   const supabase = createServerSupabase();
@@ -14,7 +17,7 @@ export default async function UsagePage() {
 
   const { data: evaluations } = await supabase
     .from('evaluations')
-    .select('*, copies(*)')
+    .select('id, title, subject, created_at, copies(validated_by_user)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -43,19 +46,19 @@ export default async function UsagePage() {
   const completionRate = totalCopies > 0 ? Math.round((validatedCopies / totalCopies) * 100) : 0;
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto space-y-8">
       <FadeIn>
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Mon usage</h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Mon activité</h1>
           <p className="text-muted-foreground mt-1">
-            Tes stats, ton temps gagné, tes matières.
+            Tes évaluations, tes copies validées, ton temps gagné.
           </p>
         </div>
       </FadeIn>
 
       {/* Stats principales */}
       <FadeIn delay={100}>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs">
@@ -81,7 +84,7 @@ export default async function UsagePage() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
             <CardHeader className="pb-2 relative">
               <CardDescription className="flex items-center gap-1.5 text-xs">
-                <Clock className="h-3.5 w-3.5" /> Temps économisé
+                <Clock className="h-3.5 w-3.5" /> Temps gagné (estimation)
               </CardDescription>
               <CardTitle className="text-3xl font-bold text-primary">
                 {Math.round(timeSavedMin / 60)}h {timeSavedMin % 60}<span className="text-base">min</span>
@@ -92,7 +95,7 @@ export default async function UsagePage() {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs">
-                <TrendingUp className="h-3.5 w-3.5" /> Taux finalisation
+                <TrendingUp className="h-3.5 w-3.5" /> Part validée
               </CardDescription>
               <CardTitle className="text-3xl font-bold">{completionRate}%</CardTitle>
             </CardHeader>
@@ -148,7 +151,7 @@ export default async function UsagePage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {subjectStats.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucune donnée encore.</p>
+                <p className="text-sm text-muted-foreground">Rien pour l'instant.</p>
               ) : (
                 subjectStats.map(([subject, stats]) => {
                   const max = subjectStats[0][1].copies;
@@ -156,7 +159,7 @@ export default async function UsagePage() {
                   return (
                     <div key={subject}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="capitalize">{subject}</span>
+                        <span>{subjectLabel(subject)}</span>
                         <span className="text-muted-foreground">
                           {stats.validated}/{stats.copies}
                         </span>
@@ -188,7 +191,7 @@ export default async function UsagePage() {
           <CardContent className="space-y-1">
             {evaluations?.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">
-                Pas encore d'évaluation. Crée ta première →
+                Pas encore d'évaluation. <Link href="/app/new" className="text-primary underline">Créer la première</Link>
               </p>
             ) : (
               evaluations?.map((e, idx) => {
@@ -213,7 +216,7 @@ export default async function UsagePage() {
                           {new Date(e.created_at).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'long',
-                          })} · {e.subject}
+                          })} · {subjectLabel(e.subject)}
                         </p>
                       </div>
                     </div>

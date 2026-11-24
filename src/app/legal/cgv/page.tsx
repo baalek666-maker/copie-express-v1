@@ -1,3 +1,7 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Conditions générales de vente', alternates: { canonical: '/legal/cgv' } };
+
 export const dynamic = 'force-static';
 
 export default function CGVPage() {
@@ -6,7 +10,7 @@ export default function CGVPage() {
       <div className="max-w-3xl mx-auto p-8">
         <a href="/" className="text-sm text-muted-foreground hover:text-foreground">← Retour</a>
         <h1>Conditions Générales de Vente — Copie Express</h1>
-        <p><strong>Dernière mise à jour :</strong> 30 juillet 2026</p>
+        <p><strong>Dernière mise à jour :</strong> 24 novembre 2026</p>
 
         <h2>1. Objet</h2>
         <p>Les présentes Conditions Générales de Vente (CGV) régissent la vente des services d&apos;abonnement Copie Express aux enseignants et établissements scolaires. Elles complètent les Conditions Générales d&apos;Utilisation (CGU).</p>
@@ -14,7 +18,7 @@ export default function CGVPage() {
         <h2>2. Prestations vendues</h2>
         <p>Copie Express propose les services suivants :</p>
         <ul>
-          <li><strong>Forfait Découverte (gratuit)</strong> : 10 copies offertes, sans engagement</li>
+          <li><strong>Forfait Découverte (gratuit)</strong> : 5 copies offertes, sans engagement</li>
           <li><strong>Forfait Mensuel</strong> : 10 € TTC / mois, sans engagement</li>
           <li><strong>Forfait Annuel Standard</strong> : 99 € TTC / an, soit l&apos;équivalent de 8,25 € / mois</li>
           <li><strong>Forfait Expert Bac/Brevet</strong> : 149 € TTC / an, avec fonctionnalités avancées</li>
@@ -22,7 +26,7 @@ export default function CGVPage() {
         <p>Les prix sont indiqués TTC. TVA non applicable, article 293 B du CGI (auto-entreprise en cours d&apos;immatriculation).</p>
 
         <h2>3. Commande</h2>
-        <p>La commande s&apos;effectue en ligne depuis le site copie-express.fr. L&apos;utilisateur sélectionne le forfait souhaité, fournit ses informations de paiement via Stripe, et valide sa commande. Un email de confirmation est envoyé dans les minutes qui suivent.</p>
+        <p>La commande s&apos;effectue en ligne depuis le site Copie Express. L&apos;utilisateur sélectionne le forfait souhaité, fournit ses informations de paiement via Stripe, et valide sa commande. Un email de confirmation est envoyé dans les minutes qui suivent.</p>
 
         <h2>4. Paiement</h2>
         <p>Le paiement s&apos;effectue exclusivement par carte bancaire via le service sécurisé Stripe (chiffrement PCI-DSS niveau 1). Aucune information bancaire n&apos;est stockée sur les serveurs de Copie Express.</p>
@@ -33,7 +37,7 @@ export default function CGVPage() {
 
         <h2>6. Droit de rétractation</h2>
         <p>Conformément aux articles L221-18 et suivants du Code de la consommation, l&apos;utilisateur dispose d&apos;un délai de 14 jours à compter de la souscription pour exercer son droit de rétractation, sans justification et sans pénalité.</p>
-        <p>Ce droit peut être exercé par email à contact@copie-express.fr. Le remboursement est effectué sous 14 jours via le même moyen de paiement.</p>
+        <p>Ce droit peut être exercé via <a href="/contact" className="underline">le formulaire de contact</a>. Le remboursement est effectué sous 14 jours via le même moyen de paiement.</p>
         <p><strong>Exception :</strong> Si l&apos;utilisateur a explicitement demandé à commencer à utiliser le service pendant le délai de rétractation et a renoncé à son droit de rétractation, le service commencé reste dû au prorata.</p>
 
         <h2>7. Renouvellement et résiliation</h2>
@@ -52,7 +56,7 @@ export default function CGVPage() {
         <h2>10. Service client</h2>
         <p>Pour toute question ou réclamation :</p>
         <ul>
-          <li>Email : contact@copie-express.fr</li>
+          <li>Contact : <a href="/contact" className="underline">le formulaire de contact</a></li>
           <li>Délai de réponse : sous 48 heures ouvrées</li>
         </ul>
 
@@ -65,7 +69,7 @@ export default function CGVPage() {
 
         <h2>13. Contact</h2>
         <p>Copie Express — auto-entreprise en cours d&apos;immatriculation<br />
-        Email : contact@copie-express.fr</p>
+        Contact : <a href="/contact" className="underline">le formulaire de contact</a></p>
       </div>
     </main>
   );
