@@ -46,7 +46,9 @@ export function BaremeAuto({
       setComment(data.comment);
       router.refresh();
     } catch (err: any) {
-      setError(err.message);
+      setError(err?.code === 'engine_unavailable'
+        ? 'Le barème ne peut pas être généré pour le moment. Réessaie un peu plus tard, ou continue sans barème : chaque réponse juste comptera 1 point.'
+        : err.message);
     } finally {
       setLoading(false);
     }
