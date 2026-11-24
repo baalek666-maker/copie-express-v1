@@ -152,12 +152,12 @@ export default function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-30 -mx-0 px-0">
         <div className="header-shell border-b bg-background/80 backdrop-blur transition-all duration-300" data-scrolled="false">
-          <div className="container flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-              <img src="/favicon.svg" alt="" className="h-8 w-8" />
+          <div className="container px-4 sm:px-8 flex h-16 items-center justify-between gap-2">
+            <Link href="/" className="flex items-center gap-2 font-bold text-base sm:text-lg whitespace-nowrap shrink-0">
+              <img src="/favicon.svg" alt="" className="h-7 w-7 sm:h-8 sm:w-8" />
               <span>Copie Express</span>
             </Link>
-            <nav className="flex items-center gap-2">
+            <nav className="flex items-center gap-1 sm:gap-2 shrink-0">
               <Link href="/why-us" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
                                 Pourquoi nous
                               </Link>
@@ -167,12 +167,12 @@ export default function HomePage() {
                               <Link href="/blog" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">
                                 Blog
                               </Link>
-              <Button asChild variant="ghost">
+              <Button asChild variant="ghost" className="px-2.5 sm:px-4">
                 <Link href="/login">Connexion</Link>
               </Button>
-              <Button asChild>
+              <Button asChild className="px-3 sm:px-4">
                 <Link href="/signup">
-                  Essai gratuit <ArrowRight className="h-4 w-4 ml-1" />
+                  Essai gratuit <ArrowRight className="hidden sm:block h-4 w-4 ml-1" />
                 </Link>
               </Button>
             </nav>

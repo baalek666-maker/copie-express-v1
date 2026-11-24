@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Cookie, X } from 'lucide-react';
+import { Cookie } from 'lucide-react';
 
 const COOKIE_CONSENT_KEY = 'cookie-consent';
 
@@ -32,37 +32,26 @@ export function CookieBanner() {
 
   if (!show) return null;
 
+  // Bandeau fin, en bas de l'écran : il ne doit recouvrir ni un bouton ni un prix.
   return (
     <div
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-slide-up"
+      className="fixed bottom-0 inset-x-0 z-50 animate-slide-up pointer-events-none p-3 sm:p-4"
       role="dialog"
       aria-label="Bandeau de consentement cookies"
     >
-      <div className="bg-card border-2 rounded-xl shadow-2xl p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <Cookie className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold">On respecte ta vie privée</h3>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              On utilise Plausible Analytics, un outil sans cookies et conforme RGPD, pour comprendre comment améliorer le service.
-              Aucune donnée personnelle collectée.{' '}
-              <Link href="/legal/privacy" className="text-primary hover:underline">
-                En savoir plus
-              </Link>
-            </p>
-          </div>
-          <button
-            onClick={decline}
-            className="text-muted-foreground hover:text-foreground shrink-0"
-            aria-label="Fermer"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={accept} size="sm" className="flex-1">
+      <div className="pointer-events-auto mx-auto max-w-3xl bg-card border rounded-xl shadow-lg px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+        <p className="flex-1 min-w-0 text-xs text-muted-foreground leading-relaxed flex items-start gap-2">
+          <Cookie className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <span>
+            <span className="font-semibold text-foreground">On respecte ta vie privée.</span>{' '}
+            Mesure d'audience sans cookies ni donnée personnelle (Plausible).{' '}
+            <Link href="/legal/privacy" className="text-primary hover:underline whitespace-nowrap">
+              En savoir plus
+            </Link>
+          </span>
+        </p>
+        <div className="flex gap-2 shrink-0">
+          <Button onClick={accept} size="sm" className="flex-1 sm:flex-none">
             OK, compris
           </Button>
           <Button onClick={decline} size="sm" variant="outline">
